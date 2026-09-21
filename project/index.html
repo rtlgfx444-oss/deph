@@ -1,0 +1,4189 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="theme-color" content="#08080a" />
+  <title>BMW M4 — The Ultimate Driving Machine</title>
+  <meta name="description"
+    content="Experience the BMW M4 in interactive 3D. Scroll to explore design, performance and technology." />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
+    rel="stylesheet" />
+
+  <style>
+    /* ═══════════════════════════════════════════════════════════════
+   00. RESET & FOUNDATION
+   ═══════════════════════════════════════════════════════════════ */
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html {
+      -webkit-text-size-adjust: 100%;
+      scroll-behavior: auto;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #08080a;
+      color: #f2f2f4;
+      line-height: 1.6;
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      overscroll-behavior-y: none;
+    }
+
+    body.loading {
+      overflow: hidden;
+    }
+
+    img,
+    svg,
+    canvas {
+      display: block;
+      max-width: 100%;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    button,
+    input {
+      font: inherit;
+      color: inherit;
+      border: none;
+      background: none;
+      outline: none;
+    }
+
+    button {
+      cursor: pointer;
+    }
+
+    ul,
+    ol {
+      list-style: none;
+    }
+
+    ::selection {
+      background: #1c69d4;
+      color: #fff;
+    }
+
+    /* ═══════════════════════════════════════════════════════════════
+   01. DESIGN TOKENS
+   ═══════════════════════════════════════════════════════════════ */
+    :root {
+      /* Core surfaces */
+      --bg: #08080a;
+      --bg-2: #0c0c10;
+      --bg-3: #121217;
+      --panel: rgba(255, 255, 255, 0.032);
+      --panel-2: rgba(255, 255, 255, 0.055);
+
+      /* Lines */
+      --line: rgba(255, 255, 255, 0.08);
+      --line-2: rgba(255, 255, 255, 0.14);
+      --line-3: rgba(255, 255, 255, 0.22);
+
+      /* Text */
+      --fg: #f4f4f6;
+      --fg-2: #b8b8c2;
+      --fg-3: #7c7c8a;
+      --fg-4: #4e4e5a;
+
+      /* BMW M accents */
+      --m-blue: #0066b1;
+      --m-lightblue: #1c69d4;
+      --m-red: #e4002b;
+      --m-violet: #16588e;
+
+      /* Functional */
+      --accent: #1c69d4;
+      --accent-bright: #4d94ff;
+      --danger: #e4002b;
+
+      /* Type scale */
+      --font-display: 'Archivo', sans-serif;
+      --font-body: 'Inter', sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+
+      /* Easing */
+      --ease: cubic-bezier(0.4, 0, 0.2, 1);
+      --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+      --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+
+      /* Layout */
+      --gut: 40px;
+      --max: 1440px;
+    }
+
+    @media (max-width: 900px) {
+      :root {
+        --gut: 22px;
+      }
+    }
+
+    /* ═══════════════════════════════════════════════════════════════
+   02. CANVAS LAYER
+   ═══════════════════════════════════════════════════════════════ */
+    #stage {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      background: #050507;
+      pointer-events: none;
+    }
+
+    #stage canvas {
+      width: 100% !important;
+      height: 100% !important;
+      display: block;
+    }
+
+    /* Vignette + grain overlay */
+    #grade {
+      position: fixed;
+      inset: 0;
+      z-index: 2;
+      pointer-events: none;
+      background:
+        radial-gradient(ellipse 90% 70% at 50% 45%, transparent 30%, rgba(0, 0, 0, 0.55) 100%);
+      mix-blend-mode: multiply;
+    }
+
+    #grain {
+      position: fixed;
+      inset: -50%;
+      z-index: 3;
+      pointer-events: none;
+      opacity: 0.045;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)'/%3E%3C/svg%3E");
+      animation: grainShift 0.9s steps(3) infinite;
+    }
+
+    @keyframes grainShift {
+      0% {
+        transform: translate(0, 0);
+      }
+
+      33% {
+        transform: translate(-3%, -2%);
+      }
+
+      66% {
+        transform: translate(2%, 3%);
+      }
+
+      100% {
+        transform: translate(0, 0);
+      }
+    }
+
+    /* ═══════════════════════════════════════════════════════════════
+   03. LOADER
+   ═══════════════════════════════════════════════════════════════ */
+    #loader {
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      background: #08080a;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 34px;
+      transition: opacity 0.9s var(--ease-out), visibility 0.9s;
+    }
+
+    #loader.done {
+      opacity: 0;
+      visibility: hidden;
+    }
+
+    .load-brand {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      font-family: var(--font-display);
+      font-weight: 800;
+      font-size: 15px;
+      letter-spacing: 0.42em;
+      text-transform: uppercase;
+      color: #fff;
+      opacity: 0;
+      animation: fadeUp 0.9s var(--ease-out) 0.15s forwards;
+    }
+
+    .load-brand .divider-dot {
+      width: 5px;
+      height: 5px;
+      background: var(--m-red);
+      border-radius: 50%;
+    }
+
+    .load-ring {
+      position: relative;
+      width: 96px;
+      height: 96px;
+    }
+
+    .load-ring svg {
+      width: 100%;
+      height: 100%;
+      transform: rotate(-90deg);
+    }
+
+    .load-ring circle {
+      fill: none;
+      stroke-width: 1.5;
+    }
+
+    .load-ring .track {
+      stroke: rgba(255, 255, 255, 0.08);
+    }
+
+    .load-ring .prog {
+      stroke: #fff;
+      stroke-linecap: round;
+      stroke-dasharray: 283;
+      stroke-dashoffset: 283;
+      transition: stroke-dashoffset 0.25s linear;
+    }
+
+    .load-pct {
+      position: absolute;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      font-family: var(--font-mono);
+      font-size: 14px;
+      font-weight: 500;
+      color: #fff;
+      letter-spacing: 0.05em;
+    }
+
+    .load-status {
+      font-family: var(--font-mono);
+      font-size: 10.5px;
+      letter-spacing: 0.28em;
+      text-transform: uppercase;
+      color: var(--fg-4);
+      height: 14px;
+      opacity: 0;
+      animation: fadeUp 0.9s var(--ease-out) 0.4s forwards;
+    }
+
+    @keyframes fadeUp {
+      from {
+        opacity: 0;
+        transform: translateY(12px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* ═══════════════════════════════════════════════════════════════
+   04. UI LAYER
+   ═══════════════════════════════════════════════════════════════ */
+    #ui {
+      position: relative;
+      z-index: 10;
+      pointer-events: none;
+    }
+
+    #ui a,
+    #ui button,
+    #ui input,
+    #ui .pe {
+      pointer-events: auto;
+    }
+
+    /* ═══════════════════════════════════════════════════════════════
+   05. HEADER
+   ═══════════════════════════════════════════════════════════════ */
+    .hdr {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 100;
+      padding: 26px var(--gut);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      transition: padding 0.5s var(--ease), background 0.5s var(--ease), backdrop-filter 0.5s var(--ease), border-color 0.5s var(--ease);
+      border-bottom: 1px solid transparent;
+    }
+
+    .hdr.solid {
+      padding: 14px var(--gut);
+      background: rgba(8, 8, 10, 0.72);
+      backdrop-filter: blur(24px) saturate(180%);
+      -webkit-backdrop-filter: blur(24px) saturate(180%);
+      border-bottom-color: var(--line);
+    }
+
+    .hdr-left {
+      display: flex;
+      align-items: center;
+      gap: 46px;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .logo-emblem {
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      position: relative;
+      background: #111;
+      border: 2px solid #2a2a30;
+      display: grid;
+      place-items: center;
+      overflow: hidden;
+      flex-shrink: 0;
+    }
+
+    .logo-emblem::before {
+      content: '';
+      position: absolute;
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background: conic-gradient(#fff 0deg 90deg,
+          #1c69d4 90deg 180deg,
+          #fff 180deg 270deg,
+          #1c69d4 270deg 360deg);
+    }
+
+    .logo-emblem::after {
+      content: '';
+      position: absolute;
+      inset: 6px;
+      border-radius: 50%;
+      border: 1.5px solid rgba(0, 0, 0, 0.65);
+      z-index: 2;
+    }
+
+    .logo-text {
+      font-family: var(--font-display);
+      font-weight: 800;
+      font-size: 15px;
+      letter-spacing: 0.34em;
+      text-transform: uppercase;
+    }
+
+    .logo-text span {
+      color: var(--m-red);
+    }
+
+    .nav {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .nav a {
+      position: relative;
+      padding: 9px 16px;
+      font-size: 12px;
+      font-weight: 500;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--fg-3);
+      transition: color 0.3s var(--ease);
+    }
+
+    .nav a::after {
+      content: '';
+      position: absolute;
+      left: 50%;
+      bottom: 3px;
+      width: 0;
+      height: 1px;
+      background: var(--m-red);
+      transform: translateX(-50%);
+      transition: width 0.35s var(--ease-out);
+    }
+
+    .nav a:hover {
+      color: #fff;
+    }
+
+    .nav a:hover::after {
+      width: 18px;
+    }
+
+    .hdr-right {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .hdr-cta {
+      display: inline-flex;
+      align-items: center;
+      gap: 9px;
+      padding: 11px 24px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: #fff;
+      border: 1px solid var(--line-3);
+      border-radius: 2px;
+      position: relative;
+      overflow: hidden;
+      transition: color 0.4s var(--ease), border-color 0.4s var(--ease);
+    }
+
+    .hdr-cta::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: #fff;
+      transform: translateY(101%);
+      transition: transform 0.45s var(--ease-out);
+      z-index: -1;
+    }
+
+    .hdr-cta:hover {
+      color: #08080a;
+      border-color: #fff;
+    }
+
+    .hdr-cta:hover::before {
+      transform: translateY(0);
+    }
+
+    .hdr-cta span {
+      position: relative;
+      z-index: 1;
+    }
+
+    .burger {
+      display: none;
+      width: 42px;
+      height: 42px;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
+    }
+
+    .burger i {
+      display: block;
+      width: 20px;
+      height: 1.5px;
+      background: #fff;
+      transition: transform 0.35s var(--ease), opacity 0.25s var(--ease);
+    }
+
+    .burger.on i:nth-child(1) {
+      transform: translateY(6.5px) rotate(45deg);
+    }
+
+    .burger.on i:nth-child(2) {
+      opacity: 0;
+    }
+
+    .burger.on i:nth-child(3) {
+      transform: translateY(-6.5px) rotate(-45deg);
+    }
+
+    @media (max-width: 1080px) {
+      .nav {
+        display: none;
+      }
+
+      .burger {
+        display: flex;
+      }
+    }
+
+    @media (max-width: 620px) {
+      .hdr-cta {
+        display: none;
+      }
+    }
+
+    /* Mobile menu */
+    .mobile-menu {
+      position: fixed;
+      inset: 0;
+      z-index: 99;
+      background: rgba(6, 6, 8, 0.98);
+      backdrop-filter: blur(30px);
+      -webkit-backdrop-filter: blur(30px);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 0 var(--gut);
+      gap: 4px;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.5s var(--ease), visibility 0.5s;
+    }
+
+    .mobile-menu.on {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .mobile-menu a {
+      font-family: var(--font-display);
+      font-size: clamp(30px, 9vw, 52px);
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      text-transform: uppercase;
+      color: var(--fg-3);
+      padding: 8px 0;
+      border-bottom: 1px solid var(--line);
+      transition: color 0.35s var(--ease), padding-left 0.4s var(--ease-out);
+      transform: translateY(20px);
+      opacity: 0;
+    }
+
+    .mobile-menu.on a {
+      transform: translateY(0);
+      opacity: 1;
+    }
+
+    .mobile-menu a:nth-child(1) {
+      transition-delay: 0.06s;
+    }
+
+    .mobile-menu a:nth-child(2) {
+      transition-delay: 0.12s;
+    }
+
+    .mobile-menu a:nth-child(3) {
+      transition-delay: 0.18s;
+    }
+
+    .mobile-menu a:nth-child(4) {
+      transition-delay: 0.24s;
+    }
+
+    .mobile-menu a:nth-child(5) {
+      transition-delay: 0.30s;
+    }
+
+    .mobile-menu a:hover {
+      color: #fff;
+      padding-left: 14px;
+    }
+
+    /* ═══════════════════════════════════════════════════════════════
+   06. SECTION SHELL
+   ═══════════════════════════════════════════════════════════════ */
+    .sec {
+      position: relative;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      padding: 120px var(--gut);
+    }
+
+    .sec-inner {
+      width: 100%;
+      max-width: var(--max);
+      margin: 0 auto;
+    }
+
+    .sec-left {
+      justify-content: flex-start;
+    }
+
+    .sec-right {
+      justify-content: flex-end;
+    }
+
+    .sec-center {
+      justify-content: center;
+      text-align: center;
+    }
+
+    /* ═══════════════════════════════════════════════════════════════
+   07. TYPOGRAPHY
+   ═══════════════════════════════════════════════════════════════ */
+    .display {
+      font-family: var(--font-display);
+      font-weight: 900;
+      line-height: 0.86;
+      letter-spacing: -0.035em;
+      text-transform: uppercase;
+    }
+
+    .t-hero {
+      font-size: clamp(58px, 13.5vw, 190px);
+    }
+
+    .t-xl {
+      font-size: clamp(44px, 8vw, 116px);
+    }
+
+    .t-lg {
+      font-size: clamp(34px, 5.2vw, 74px);
+    }
+
+    .t-md {
+      font-size: clamp(24px, 3.2vw, 44px);
+    }
+
+    .t-sm {
+      font-size: clamp(18px, 2vw, 26px);
+    }
+
+    .stroke-text {
+      -webkit-text-stroke: 1px rgba(255, 255, 255, 0.34);
+      color: transparent;
+    }
+
+    .accent-text {
+      color: var(--m-red);
+    }
+
+    .metal-text {
+      background: linear-gradient(180deg, #ffffff 0%, #ffffff 32%, #9a9aa8 58%, #ffffff 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 11px;
+      font-family: var(--font-mono);
+      font-size: 10.5px;
+      font-weight: 500;
+      letter-spacing: 0.32em;
+      text-transform: uppercase;
+      color: var(--fg-3);
+      margin-bottom: 22px;
+    }
+
+    .eyebrow::before {
+      content: '';
+      width: 26px;
+      height: 1px;
+      background: var(--m-red);
+      flex-shrink: 0;
+    }
+
+    .body-lg {
+      font-size: clamp(15px, 1.35vw, 18px);
+      line-height: 1.75;
+      color: var(--fg-2);
+      font-weight: 300;
+      max-width: 46ch;
+    }
+
+    .body {
+      font-size: 15px;
+      line-height: 1.75;
+      color: var(--fg-3);
+      font-weight: 400;
+      max-width: 50ch;
+    }
+
+    .mono {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--fg-4);
+    }
+
+    /* ═══════════════════════════════════════════════════════════════
+   08. REVEAL ANIMATION
+   ═══════════════════════════════════════════════════════════════ */
+    .rv {
+      opacity: 0;
+      transform: translateY(38px);
+      transition: opacity 1s var(--ease-out), transform 1s var(--ease-out);
+      will-change: opacity, transform;
+    }
+
+    .rv.on {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .rv-d1 {
+      transition-delay: 0.1s;
+    }
+
+    .rv-d2 {
+      transition-delay: 0.2s;
+    }
+
+    .rv-d3 {
+      transition-delay: 0.3s;
+    }
+
+    .rv-d4 {
+      transition-delay: 0.4s;
+    }
+
+    .rv-d5 {
+      transition-delay: 0.5s;
+    }
+
+    .rv-d6 {
+      transition-delay: 0.6s;
+    }
+
+    .clip-rv {
+      clip-path: inset(0 0 100% 0);
+      transition: clip-path 1.2s var(--ease-out);
+    }
+
+    .clip-rv.on {
+      clip-path: inset(0 0 0 0);
+    }
+
+    /* ═══════════════════════════════════════════════════════════════
+   09. HERO
+   ═══════════════════════════════════════════════════════════════ */
+    .hero {
+      min-height: 100svh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 0 var(--gut) 120px;
+      position: relative;
+    }
+
+    .hero-title {
+      position: relative;
+      z-index: 2;
+      mix-blend-mode: normal;
+    }
+
+    .hero-title .line {
+      display: block;
+      overflow: hidden;
+    }
+
+    .hero-title .line>span {
+      display: block;
+      transform: translateY(105%);
+      transition: transform 1.35s var(--ease-out);
+    }
+
+    .hero-title.ready .line>span {
+      transform: translateY(0);
+    }
+
+    .hero-title .line:nth-child(2)>span {
+      transition-delay: 0.12s;
+    }
+
+    .hero-title .line:nth-child(3)>span {
+      transition-delay: 0.24s;
+    }
+
+    .hero-sub {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 60px;
+      margin-top: 46px;
+      flex-wrap: wrap;
+    }
+
+    .hero-meta {
+      display: flex;
+      gap: 54px;
+      flex-wrap: wrap;
+    }
+
+    .hero-meta-item {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+
+    .hero-meta-val {
+      font-family: var(--font-display);
+      font-size: 30px;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      line-height: 1;
+    }
+
+    .hero-meta-val em {
+      font-style: normal;
+      font-size: 15px;
+      color: var(--fg-3);
+      margin-left: 3px;
+    }
+
+    .hero-meta-lbl {
+      font-family: var(--font-mono);
+      font-size: 9.5px;
+      letter-spacing: 0.24em;
+      text-transform: uppercase;
+      color: var(--fg-4);
+    }
+
+    .scroll-cue {
+      position: absolute;
+      bottom: 44px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 13px;
+      z-index: 3;
+    }
+
+    .scroll-cue-text {
+      font-family: var(--font-mono);
+      font-size: 9px;
+      letter-spacing: 0.34em;
+      text-transform: uppercase;
+      color: var(--fg-4);
+    }
+
+    .scroll-cue-line {
+      width: 1px;
+      height: 52px;
+      background: rgba(255, 255, 255, 0.12);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .scroll-cue-line::after {
+      content: '';
+      position: absolute;
+      top: -52px;
+      left: 0;
+      width: 100%;
+      height: 52px;
+      background: linear-gradient(180deg, transparent, #fff, transparent);
+      animation: cueDrop 2.2s var(--ease-in-out) infinite;
+    }
+
+    @keyframes cueDrop {
+      0% {
+        top: -52px;
+      }
+
+      100% {
+        top: 52px;
+      }
+    }
+
+    /* ═══════════════════════════════════════════════════════════════
+   10. DESIGN SECTION
+   ═══════════════════════════════════════════════════════════════ */
+    .design-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 80px;
+      align-items: center;
+    }
+
+    .spec-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+      margin-top: 42px;
+      border-top: 1px solid var(--line);
+    }
+
+    .spec-row {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 24px;
+      padding: 19px 0;
+      border-bottom: 1px solid var(--line);
+      transition: padding-left 0.4s var(--ease-out), border-color 0.4s var(--ease);
+    }
+
+    .spec-row:hover {
+      padding-left: 12px;
+      border-bottom-color: var(--line-3);
+    }
+
+    .spec-key {
+      font-family: var(--font-mono);
+      font-size: 10.5px;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--fg-4);
+    }
+
+    .spec-val {
+      font-family: var(--font-display);
+      font-size: 21px;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+      color: #fff;
+      text-align: right;
+    }
+
+    .spec-val em {
+      font-style: normal;
+      font-size: 13px;
+      color: var(--fg-3);
+      margin-left: 3px;
+    }
+
+    /* Vertical rail */
+    .rail {
+      position: fixed;
+      right: var(--gut);
+      top: 50%;
+      transform: translateY(-50%);
+      z-index: 90;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+      align-items: flex-end;
+    }
+
+    .rail-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      cursor: pointer;
+      pointer-events: auto;
+    }
+
+    .rail-label {
+      font-family: var(--font-mono);
+      font-size: 9px;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: var(--fg-4);
+      opacity: 0;
+      transform: translateX(8px);
+      transition: opacity 0.35s var(--ease), transform 0.35s var(--ease), color 0.35s var(--ease);
+    }
+
+    .rail-item:hover .rail-label,
+    .rail-item.on .rail-label {
+      opacity: 1;
+      transform: translateX(0);
+    }
+
+    .rail-item.on .rail-label {
+      color: #fff;
+    }
+
+    .rail-dot {
+      width: 22px;
+      height: 1px;
+      background: rgba(255, 255, 255, 0.2);
+      transition: width 0.4s var(--ease-out), background 0.4s var(--ease);
+    }
+
+    .rail-item.on .rail-dot {
+      width: 42px;
+      background: var(--m-red);
+    }
+
+    @media (max-width: 900px) {
+      .rail {
+        display: none;
+      }
+
+      .design-grid {
+        grid-template-columns: 1fr;
+        gap: 40px;
+      }
+    }
+
+    /* ═══════════════════════════════════════════════════════════════
+   11. PERFORMANCE / STATS
+   ═══════════════════════════════════════════════════════════════ */
+    .stat-wall {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1px;
+      background: var(--line);
+      border-top: 1px solid var(--line);
+      border-bottom: 1px solid var(--line);
+      margin-top: 60px;
+    }
+
+    .stat-cell {
+      background: rgba(8, 8, 10, 0.55);
+      backdrop-filter: blur(10px);
+      padding: 40px 26px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .stat-cell::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 0;
+      height: 2px;
+      background: var(--m-red);
+      transition: width 1.1s var(--ease-out);
+    }
+
+    .stat-cell.on::after {
+      width: 100%;
+    }
+
+    .stat-num {
+      font-family: var(--font-display);
+      font-size: clamp(38px, 4.6vw, 66px);
+      font-weight: 900;
+      line-height: 0.92;
+      letter-spacing: -0.045em;
+      color: #fff;
+      display: flex;
+      align-items: baseline;
+      gap: 4px;
+    }
+
+    .stat-num em {
+      font-style: normal;
+      font-size: 0.36em;
+      font-weight: 600;
+      color: var(--fg-3);
+      letter-spacing: 0;
+    }
+
+    .stat-name {
+      font-family: var(--font-mono);
+      font-size: 9.5px;
+      letter-spacing: 0.24em;
+      text-transform: uppercase;
+      color: var(--fg-4);
+      margin-top: 16px;
+    }
+
+    @media (max-width: 900px) {
+      .stat-wall {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    /* ═══════════════════════════════════════════════════════════════
+   12. FEATURE CARDS
+   ═══════════════════════════════════════════════════════════════ */
+    .feature-cards {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1px;
+      background: var(--line);
+      border: 1px solid var(--line);
+      margin-top: 56px;
+    }
+
+    .fcard {
+      background: rgba(8, 8, 10, 0.6);
+      backdrop-filter: blur(12px);
+      padding: 40px 32px 44px;
+      position: relative;
+      overflow: hidden;
+      transition: background 0.5s var(--ease);
+    }
+
+    .fcard::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--m-red), transparent);
+      transform: scaleX(0);
+      transition: transform 0.7s var(--ease-out);
+    }
+
+    .fcard:hover {
+      background: rgba(255, 255, 255, 0.028);
+    }
+
+    .fcard:hover::before {
+      transform: scaleX(1);
+    }
+
+    .fcard-idx {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      letter-spacing: 0.24em;
+      color: var(--fg-4);
+      margin-bottom: 30px;
+    }
+
+    .fcard-icon {
+      width: 42px;
+      height: 42px;
+      margin-bottom: 24px;
+      color: #fff;
+    }
+
+    .fcard-icon svg {
+      width: 100%;
+      height: 100%;
+      stroke-width: 1.2;
+    }
+
+    .fcard h3 {
+      font-family: var(--font-display);
+      font-size: 19px;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+      text-transform: uppercase;
+      margin-bottom: 12px;
+    }
+
+    .fcard p {
+      font-size: 14px;
+      line-height: 1.72;
+      color: var(--fg-3);
+      font-weight: 300;
+    }
+
+    @media (max-width: 980px) {
+      .feature-cards {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* ═══════════════════════════════════════════════════════════════
+   13. CONFIGURATOR
+   ═══════════════════════════════════════════════════════════════ */
+    .config-panel {
+      position: relative;
+      border: 1px solid var(--line);
+      background: rgba(8, 8, 10, 0.62);
+      backdrop-filter: blur(16px);
+      padding: 44px 42px;
+      max-width: 460px;
+      width: 100%;
+    }
+
+    .config-panel::before,
+    .config-panel::after {
+      content: '';
+      position: absolute;
+      width: 16px;
+      height: 16px;
+      border: 1px solid var(--line-3);
+    }
+
+    .config-panel::before {
+      top: -1px;
+      left: -1px;
+      border-right: none;
+      border-bottom: none;
+    }
+
+    .config-panel::after {
+      bottom: -1px;
+      right: -1px;
+      border-left: none;
+      border-top: none;
+    }
+
+    .config-title {
+      font-family: var(--font-display);
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.26em;
+      text-transform: uppercase;
+      color: var(--fg-3);
+      margin-bottom: 26px;
+    }
+
+    .swatches {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-bottom: 34px;
+    }
+
+    .swatch {
+      width: 46px;
+      height: 46px;
+      border-radius: 50%;
+      position: relative;
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      transition: transform 0.35s var(--ease-out), border-color 0.35s var(--ease);
+      pointer-events: auto;
+    }
+
+    .swatch::after {
+      content: '';
+      position: absolute;
+      inset: -6px;
+      border-radius: 50%;
+      border: 1px solid transparent;
+      transition: border-color 0.35s var(--ease), transform 0.35s var(--ease-out);
+    }
+
+    .swatch:hover {
+      transform: scale(1.09);
+    }
+
+    .swatch.on {
+      border-color: rgba(255, 255, 255, 0.5);
+    }
+
+    .swatch.on::after {
+      border-color: var(--m-red);
+      transform: scale(1.06);
+    }
+
+    .config-name {
+      font-family: var(--font-display);
+      font-size: 26px;
+      font-weight: 800;
+      letter-spacing: -0.015em;
+      text-transform: uppercase;
+      margin-bottom: 6px;
+    }
+
+    .config-desc {
+      font-size: 13px;
+      color: var(--fg-3);
+      font-weight: 300;
+      margin-bottom: 30px;
+      min-height: 40px;
+    }
+
+    .config-rows {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+      border-top: 1px solid var(--line);
+    }
+
+    .config-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 0;
+      border-bottom: 1px solid var(--line);
+      font-size: 13px;
+    }
+
+    .config-row span:first-child {
+      color: var(--fg-4);
+      font-family: var(--font-mono);
+      font-size: 10px;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+    }
+
+    .config-row span:last-child {
+      color: #fff;
+      font-weight: 500;
+    }
+
+    /* ═══════════════════════════════════════════════════════════════
+   14. BUTTONS
+   ═══════════════════════════════════════════════════════════════ */
+    .btn {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      padding: 18px 40px;
+      font-family: var(--font-display);
+      font-size: 11.5px;
+      font-weight: 700;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      border: 1px solid var(--line-3);
+      border-radius: 2px;
+      overflow: hidden;
+      transition: color 0.45s var(--ease), border-color 0.45s var(--ease);
+      white-space: nowrap;
+    }
+
+    .btn span {
+      position: relative;
+      z-index: 2;
+    }
+
+    .btn svg {
+      position: relative;
+      z-index: 2;
+      width: 15px;
+      height: 15px;
+      transition: transform 0.45s var(--ease-out);
+    }
+
+    .btn::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: #fff;
+      transform: translateY(101%);
+      transition: transform 0.5s var(--ease-out);
+      z-index: 1;
+    }
+
+    .btn:hover {
+      color: #08080a;
+      border-color: #fff;
+    }
+
+    .btn:hover::before {
+      transform: translateY(0);
+    }
+
+    .btn:hover svg {
+      transform: translateX(5px);
+    }
+
+    .btn-solid {
+      background: #fff;
+      color: #08080a;
+      border-color: #fff;
+    }
+
+    .btn-solid::before {
+      background: var(--m-red);
+    }
+
+    .btn-solid:hover {
+      color: #fff;
+      border-color: var(--m-red);
+    }
+
+    .btn-ghost {
+      border-color: var(--line-2);
+      color: var(--fg-2);
+    }
+
+    .btn-ghost:hover {
+      color: #08080a;
+    }
+
+    .btn-red {
+      background: var(--m-red);
+      border-color: var(--m-red);
+      color: #fff;
+    }
+
+    .btn-red::before {
+      background: #fff;
+    }
+
+    .btn-red:hover {
+      color: #08080a;
+      border-color: #fff;
+    }
+
+    /* ═══════════════════════════════════════════════════════════════
+   15. SPEC TABLE
+   ═══════════════════════════════════════════════════════════════ */
+    .spec-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 50px;
+    }
+
+    .spec-table tr {
+      border-bottom: 1px solid var(--line);
+      transition: background 0.4s var(--ease);
+    }
+
+    .spec-table tr:hover {
+      background: rgba(255, 255, 255, 0.02);
+    }
+
+    .spec-table td {
+      padding: 22px 12px;
+      vertical-align: baseline;
+    }
+
+    .spec-table td:first-child {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: var(--fg-4);
+      width: 34%;
+    }
+
+    .spec-table td:last-child {
+      font-family: var(--font-display);
+      font-size: clamp(18px, 2vw, 26px);
+      font-weight: 700;
+      letter-spacing: -0.01em;
+      color: #fff;
+      text-align: right;
+    }
+
+    .spec-table td:last-child em {
+      font-style: normal;
+      font-size: 0.55em;
+      color: var(--fg-3);
+      margin-left: 4px;
+      font-weight: 500;
+    }
+
+    /* ═══════════════════════════════════════════════════════════════
+   16. CTA
+   ═══════════════════════════════════════════════════════════════ */
+    .cta-final {
+      position: relative;
+      border-top: 1px solid var(--line);
+      border-bottom: 1px solid var(--line);
+      padding: 140px var(--gut);
+      text-align: center;
+      overflow: hidden;
+    }
+
+    .cta-final::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 60% 90% at 50% 100%, rgba(228, 0, 43, 0.16), transparent 70%);
+      pointer-events: none;
+    }
+
+    .cta-actions {
+      display: flex;
+      gap: 16px;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin-top: 46px;
+    }
+
+    /* ═══════════════════════════════════════════════════════════════
+   17. FOOTER
+   ═══════════════════════════════════════════════════════════════ */
+    .foot {
+      padding: 70px var(--gut) 40px;
+      border-top: 1px solid var(--line);
+      background: #060608;
+    }
+
+    .foot-inner {
+      max-width: var(--max);
+      margin: 0 auto;
+    }
+
+    .foot-top {
+      display: grid;
+      grid-template-columns: 1.7fr repeat(3, 1fr);
+      gap: 50px;
+      padding-bottom: 50px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .foot-col h4 {
+      font-family: var(--font-mono);
+      font-size: 9.5px;
+      letter-spacing: 0.26em;
+      text-transform: uppercase;
+      color: var(--fg-4);
+      margin-bottom: 20px;
+      font-weight: 500;
+    }
+
+    .foot-col ul {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .foot-col a {
+      font-size: 13.5px;
+      color: var(--fg-2);
+      font-weight: 300;
+      transition: color 0.3s var(--ease), padding-left 0.3s var(--ease-out);
+    }
+
+    .foot-col a:hover {
+      color: #fff;
+      padding-left: 5px;
+    }
+
+    .foot-brand p {
+      font-size: 13.5px;
+      color: var(--fg-3);
+      font-weight: 300;
+      line-height: 1.75;
+      margin: 20px 0 0;
+      max-width: 320px;
+    }
+
+    .foot-bot {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 24px;
+      padding-top: 30px;
+      flex-wrap: wrap;
+    }
+
+    .foot-bot p {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--fg-4);
+    }
+
+    @media (max-width: 900px) {
+      .foot-top {
+        grid-template-columns: 1fr 1fr;
+        gap: 34px;
+      }
+
+      .foot-brand {
+        grid-column: span 2;
+      }
+    }
+
+    /* ═══════════════════════════════════════════════════════════════
+   18. SIDE PROGRESS
+   ═══════════════════════════════════════════════════════════════ */
+    .prog-bar {
+      position: fixed;
+      left: 0;
+      top: 0;
+      width: 2px;
+      height: 100%;
+      background: rgba(255, 255, 255, 0.05);
+      z-index: 95;
+    }
+
+    .prog-fill {
+      width: 100%;
+      height: 0%;
+      background: linear-gradient(180deg, var(--m-lightblue), var(--m-red));
+      transition: height 0.1s linear;
+    }
+
+    @media (max-width: 900px) {
+      .prog-bar {
+        display: none;
+      }
+    }
+
+    /* ═══════════════════════════════════════════════════════════════
+   19. UTILITIES
+   ═══════════════════════════════════════════════════════════════ */
+    .mt-1 {
+      margin-top: 10px;
+    }
+
+    .mt-2 {
+      margin-top: 20px;
+    }
+
+    .mt-3 {
+      margin-top: 30px;
+    }
+
+    .mt-4 {
+      margin-top: 40px;
+    }
+
+    .mt-5 {
+      margin-top: 56px;
+    }
+
+    .mt-6 {
+      margin-top: 76px;
+    }
+
+    .op-0 {
+      opacity: 0;
+    }
+
+    /* ═══════════════════════════════════════════════════════════════
+   20. ACCESSIBILITY / MOTION
+   ═══════════════════════════════════════════════════════════════ */
+    :focus-visible {
+      outline: 1px solid var(--m-red);
+      outline-offset: 4px;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+
+      *,
+      *::before,
+      *::after {
+        animation-duration: 0.001ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.001ms !important;
+      }
+
+      .rv,
+      .clip-rv {
+        opacity: 1;
+        transform: none;
+        clip-path: none;
+      }
+
+      .hero-title .line>span {
+        transform: none;
+      }
+    }
+  </style>
+</head>
+
+<body class="loading">
+
+  <!-- ═══════════════════════════════════════════════════════════
+     LOADER
+     ═══════════════════════════════════════════════════════════ -->
+  <div id="loader">
+    <div class="load-brand">
+      <span>BMW</span>
+      <span class="divider-dot"></span>
+      <span>M4</span>
+    </div>
+
+    <div class="load-ring">
+      <svg viewBox="0 0 100 100">
+        <circle class="track" cx="50" cy="50" r="45" />
+        <circle class="prog" id="loadProg" cx="50" cy="50" r="45" />
+      </svg>
+      <div class="load-pct" id="loadPct">0</div>
+    </div>
+
+    <div class="load-status" id="loadStatus">Initialising render engine</div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════
+     3D STAGE
+     ═══════════════════════════════════════════════════════════ -->
+  <div id="stage"></div>
+  <div id="grade"></div>
+  <div id="grain"></div>
+
+  <!-- ═══════════════════════════════════════════════════════════
+     UI
+     ═══════════════════════════════════════════════════════════ -->
+  <div id="ui">
+
+    <!-- HEADER -->
+    <header class="hdr" id="hdr">
+      <div class="hdr-left">
+        <a href="#" class="logo">
+          <span class="logo-emblem"></span>
+          <span class="logo-text">BMW<span>.</span>M</span>
+        </a>
+        <nav class="nav">
+          <a href="#design">Design</a>
+          <a href="#performance">Performance</a>
+          <a href="#technology">Technology</a>
+          <a href="#configure">Configure</a>
+          <a href="#specs">Specs</a>
+        </nav>
+      </div>
+
+      <div class="hdr-right">
+        <a href="#reserve" class="hdr-cta"><span>Reserve Now</span></a>
+        <button class="burger" id="burger" aria-label="Menu">
+        <i></i><i></i><i></i>
+      </button>
+      </div>
+    </header>
+
+    <!-- MOBILE MENU -->
+    <div class="mobile-menu" id="mobileMenu">
+      <a href="#design">Design</a>
+      <a href="#performance">Performance</a>
+      <a href="#technology">Technology</a>
+      <a href="#configure">Configure</a>
+      <a href="#specs">Specs</a>
+    </div>
+
+    <!-- SIDE PROGRESS -->
+    <div class="prog-bar">
+      <div class="prog-fill" id="progFill"></div>
+    </div>
+
+    <!-- SECTION RAIL -->
+    <div class="rail" id="rail">
+      <div class="rail-item on" data-target="0">
+        <span class="rail-label">Intro</span>
+        <span class="rail-dot"></span>
+      </div>
+      <div class="rail-item" data-target="1">
+        <span class="rail-label">Design</span>
+        <span class="rail-dot"></span>
+      </div>
+      <div class="rail-item" data-target="2">
+        <span class="rail-label">Power</span>
+        <span class="rail-dot"></span>
+      </div>
+      <div class="rail-item" data-target="3">
+        <span class="rail-label">Aero</span>
+        <span class="rail-dot"></span>
+      </div>
+      <div class="rail-item" data-target="4">
+        <span class="rail-label">Tech</span>
+        <span class="rail-dot"></span>
+      </div>
+      <div class="rail-item" data-target="5">
+        <span class="rail-label">Colour</span>
+        <span class="rail-dot"></span>
+      </div>
+      <div class="rail-item" data-target="6">
+        <span class="rail-label">Data</span>
+        <span class="rail-dot"></span>
+      </div>
+      <div class="rail-item" data-target="7">
+        <span class="rail-label">Order</span>
+        <span class="rail-dot"></span>
+      </div>
+    </div>
+
+    <main>
+
+      <!-- ══════════════ HERO ══════════════ -->
+      <section class="hero" id="s0">
+        <div class="hero-title display t-hero" id="heroTitle">
+          <span class="line"><span>THE</span></span>
+          <span class="line"><span class="metal-text">ULTIMATE</span></span>
+          <span class="line"><span class="stroke-text">M4</span></span>
+        </div>
+
+        <div class="hero-sub rv rv-d3">
+          <p class="body-lg">
+            Twin-turbocharged 3.0-litre straight-six. 510 horsepower.
+            Motorsport DNA engineered for the road.
+          </p>
+
+          <div class="hero-meta">
+            <div class="hero-meta-item">
+              <span class="hero-meta-val">510<em>hp</em></span>
+              <span class="hero-meta-lbl">Max Output</span>
+            </div>
+            <div class="hero-meta-item">
+              <span class="hero-meta-val">3.9<em>s</em></span>
+              <span class="hero-meta-lbl">0–100 km/h</span>
+            </div>
+            <div class="hero-meta-item">
+              <span class="hero-meta-val">290<em>km/h</em></span>
+              <span class="hero-meta-lbl">Top Speed</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="scroll-cue">
+          <span class="scroll-cue-text">Scroll</span>
+          <span class="scroll-cue-line"></span>
+        </div>
+      </section>
+
+      <!-- ══════════════ DESIGN ══════════════ -->
+      <section class="sec sec-left" id="s1">
+        <div class="sec-inner">
+          <div class="design-grid">
+            <div>
+              <span class="eyebrow rv">01 — Exterior</span>
+              <h2 class="display t-xl clip-rv">
+                <span class="line">SCULPTED</span><br />
+                <span class="metal-text">BY AIR</span>
+              </h2>
+              <p class="body-lg mt-3 rv rv-d2">
+                Every surface of the M4 exists for a reason. The long bonnet,
+                the fast C-pillar, the flared arches — form follows function
+                at 290 km/h.
+              </p>
+
+              <div class="spec-list rv rv-d3">
+                <div class="spec-row">
+                  <span class="spec-key">Length</span>
+                  <span class="spec-val">4,794<em>mm</em></span>
+                </div>
+                <div class="spec-row">
+                  <span class="spec-key">Width</span>
+                  <span class="spec-val">1,887<em>mm</em></span>
+                </div>
+                <div class="spec-row">
+                  <span class="spec-key">Height</span>
+                  <span class="spec-val">1,393<em>mm</em></span>
+                </div>
+                <div class="spec-row">
+                  <span class="spec-key">Wheelbase</span>
+                  <span class="spec-val">2,857<em>mm</em></span>
+                </div>
+                <div class="spec-row">
+                  <span class="spec-key">Kerb Weight</span>
+                  <span class="spec-val">1,725<em>kg</em></span>
+                </div>
+              </div>
+            </div>
+            <div></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ══════════════ PERFORMANCE ══════════════ -->
+      <section class="sec sec-right" id="s2">
+        <div class="sec-inner">
+          <div style="margin-left:auto; max-width: 760px;">
+            <span class="eyebrow rv">02 — Powertrain</span>
+            <h2 class="display t-xl clip-rv">
+              <span class="line">S58</span><br />
+              <span class="metal-text">STRAIGHT SIX</span>
+            </h2>
+            <p class="body-lg mt-3 rv rv-d2">
+              The S58B30T0 is the most powerful production six-cylinder ever
+              built by BMW M. Forged crankshaft, 3D-printed cylinder head core,
+              twin mono-scroll turbochargers running 2.1 bar of boost.
+            </p>
+
+            <div class="stat-wall rv rv-d3">
+              <div class="stat-cell">
+                <div class="stat-num" data-count="510">0</div>
+                <div class="stat-name">Horsepower</div>
+              </div>
+              <div class="stat-cell">
+                <div class="stat-num" data-count="650">0</div>
+                <div class="stat-name">Newton Metres</div>
+              </div>
+              <div class="stat-cell">
+                <div class="stat-num" data-count="3.9" data-dec="1">0</div>
+                <div class="stat-name">0–100 km/h</div>
+              </div>
+              <div class="stat-cell">
+                <div class="stat-num" data-count="7200">0</div>
+                <div class="stat-name">Redline RPM</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ══════════════ AERO ══════════════ -->
+      <section class="sec sec-left" id="s3">
+        <div class="sec-inner">
+          <div style="max-width: 700px;">
+            <span class="eyebrow rv">03 — Aerodynamics</span>
+            <h2 class="display t-xl clip-rv">
+              <span class="line">AIR</span><br />
+              <span class="stroke-text">SCULPTURE</span>
+            </h2>
+            <p class="body-lg mt-3 rv rv-d2">
+              A carbon-fibre roof, aggressive front splitter, and a
+              motorsport-derived rear diffuser work together to generate
+              genuine downforce without a drag penalty.
+            </p>
+
+            <div class="feature-cards rv rv-d3">
+              <article class="fcard">
+                <div class="fcard-idx">A.01</div>
+                <div class="fcard-icon">
+                  <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-linecap="round"
+                    stroke-linejoin="round">
+                    <path d="M6 30h36M6 30c0-10 8-18 18-18s18 8 18 18" />
+                    <path d="M14 38h20" />
+                  </svg>
+                </div>
+                <h3>Carbon Roof</h3>
+                <p>Carbon-fibre-reinforced plastic roof panel saves 6 kg and lowers the centre of gravity.</p>
+              </article>
+
+              <article class="fcard">
+                <div class="fcard-idx">A.02</div>
+                <div class="fcard-icon">
+                  <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-linecap="round"
+                    stroke-linejoin="round">
+                    <path d="M4 24h10l4-8 6 16 5-12 4 8h11" />
+                  </svg>
+                </div>
+                <h3>Active Diffuser</h3>
+                <p>Rear diffuser channels underbody airflow, reducing lift by up to 22% at speed.</p>
+              </article>
+
+              <article class="fcard">
+                <div class="fcard-idx">A.03</div>
+                <div class="fcard-icon">
+                  <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-linecap="round"
+                    stroke-linejoin="round">
+                    <circle cx="24" cy="24" r="17" />
+                    <path d="M24 7v34M7 24h34" />
+                  </svg>
+                </div>
+                <h3>Air Breathers</h3>
+                <p>M-specific air curtains route flow around the front wheels, cutting turbulence.</p>
+              </article>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ══════════════ TECHNOLOGY ══════════════ -->
+      <section class="sec sec-right" id="s4">
+        <div class="sec-inner">
+          <div style="margin-left:auto; max-width: 620px;">
+            <span class="eyebrow rv">04 — Cockpit</span>
+            <h2 class="display t-xl clip-rv">
+              <span class="line">DRIVER</span><br />
+              <span class="metal-text">CENTRIC</span>
+            </h2>
+            <p class="body-lg mt-3 rv rv-d2">
+              M Carbon bucket seats, a 12.3-inch digital cluster and the
+              M Drive Professional telemetry system. Every control falls
+              naturally to hand.
+            </p>
+
+            <div class="spec-list rv rv-d3">
+              <div class="spec-row">
+                <span class="spec-key">Display</span>
+                <span class="spec-val">12.3" + 14.9" Curved</span>
+              </div>
+              <div class="spec-row">
+                <span class="spec-key">Audio</span>
+                <span class="spec-val">Harman Kardon 464W</span>
+              </div>
+              <div class="spec-row">
+                <span class="spec-key">Seats</span>
+                <span class="spec-val">M Carbon Bucket</span>
+              </div>
+              <div class="spec-row">
+                <span class="spec-key">Assistant</span>
+                <span class="spec-val">BMW iDrive 8.5</span>
+              </div>
+              <div class="spec-row">
+                <span class="spec-key">Telemetry</span>
+                <span class="spec-val">M Drive Professional</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ══════════════ CONFIGURE ══════════════ -->
+      <section class="sec sec-left" id="s5">
+        <div class="sec-inner">
+          <div class="config-panel rv">
+            <div class="config-title">Select Exterior Finish</div>
+
+            <div class="swatches" id="swatches">
+              <button class="swatch on" data-color="#0b0e14" data-name="Frozen Black"
+              data-desc="Deep metallic black with a cool blue flake."
+              style="background: linear-gradient(135deg,#1a1e26,#05060a)"></button>
+
+              <button class="swatch" data-color="#c8102e" data-name="Melbourne Red"
+              data-desc="Iconic solid red. The colour of M."
+              style="background: linear-gradient(135deg,#e02a44,#8c0a1e)"></button>
+
+              <button class="swatch" data-color="#1c69d4" data-name="Portimao Blue"
+              data-desc="Bright metallic blue with strong depth."
+              style="background: linear-gradient(135deg,#3d8ce8,#0d3f85)"></button>
+
+              <button class="swatch" data-color="#e8e9eb" data-name="Alpine White"
+              data-desc="Pure gloss white, motorsport classic."
+              style="background: linear-gradient(135deg,#ffffff,#c3c6cb)"></button>
+
+              <button class="swatch" data-color="#6e7278" data-name="Nardo Grey"
+              data-desc="Flat solid grey, understated aggression."
+              style="background: linear-gradient(135deg,#8f949b,#54585e)"></button>
+
+              <button class="swatch" data-color="#2f6b3a" data-name="Isle of Man Green"
+              data-desc="Deep metallic green, launch edition only."
+              style="background: linear-gradient(135deg,#3f8a4e,#1a3f22)"></button>
+            </div>
+
+            <div class="config-name" id="configName">Frozen Black</div>
+            <div class="config-desc" id="configDesc">Deep metallic black with a cool blue flake.</div>
+
+            <div class="config-rows">
+              <div class="config-row">
+                <span>Wheels</span>
+                <span>19" / 20" M Double-Spoke</span>
+              </div>
+              <div class="config-row">
+                <span>Brakes</span>
+                <span>M Compound, Red Calipers</span>
+              </div>
+              <div class="config-row">
+                <span>Trim</span>
+                <span>Carbon Fibre Interior</span>
+              </div>
+              <div class="config-row">
+                <span>From</span>
+                <span>£82,450</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ══════════════ SPECS ══════════════ -->
+      <section class="sec sec-center" id="s6">
+        <div class="sec-inner">
+          <span class="eyebrow rv" style="justify-content:center">05 — Technical Data</span>
+          <h2 class="display t-xl clip-rv" style="text-align:center">
+            <span class="line">FULL</span>
+            <span class="metal-text">SPECIFICATION</span>
+          </h2>
+
+          <div style="max-width: 900px; margin: 0 auto;">
+            <table class="spec-table rv rv-d2">
+              <tbody>
+                <tr>
+                  <td>Engine</td>
+                  <td>S58 3.0L Twin-Turbo I6</td>
+                </tr>
+                <tr>
+                  <td>Displacement</td>
+                  <td>2,993<em>cc</em></td>
+                </tr>
+                <tr>
+                  <td>Max Power</td>
+                  <td>510<em>hp @ 6,250 rpm</em></td>
+                </tr>
+                <tr>
+                  <td>Max Torque</td>
+                  <td>650<em>Nm @ 2,750 rpm</em></td>
+                </tr>
+                <tr>
+                  <td>Transmission</td>
+                  <td>8-Speed M Steptronic</td>
+                </tr>
+                <tr>
+                  <td>Drivetrain</td>
+                  <td>M xDrive AWD</td>
+                </tr>
+                <tr>
+                  <td>0–100 km/h</td>
+                  <td>3.9<em>seconds</em></td>
+                </tr>
+                <tr>
+                  <td>Top Speed</td>
+                  <td>290<em>km/h (limited)</em></td>
+                </tr>
+                <tr>
+                  <td>Fuel Consumption</td>
+                  <td>10.2<em>l/100km combined</em></td>
+                </tr>
+                <tr>
+                  <td>CO₂ Emissions</td>
+                  <td>232<em>g/km</em></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ══════════════ CTA ══════════════ -->
+      <section class="cta-final" id="s7">
+        <div class="sec-inner">
+          <span class="eyebrow rv" style="justify-content:center">06 — Order</span>
+          <h2 class="display t-hero clip-rv" style="line-height:0.88">
+            <span class="line">YOUR</span>
+            <span class="line metal-text">M4 AWAITS</span>
+          </h2>
+
+          <p class="body-lg rv rv-d2" style="margin: 34px auto 0; text-align: center;">
+            Configure yours with a BMW M Genius, or reserve online in under
+            three minutes. Delivery from Q2.
+          </p
+
+          <div class="cta-actions rv rv-d3">
+            <a href="#" class="btn btn-solid"><span>Reserve Now</span>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                stroke-linejoin="round">
+                <path d="M5 12h14M13 6l6 6-6 6" />
+              </svg>
+            </a>
+            <a href="#" class="btn btn-ghost"><span>Book a Test Drive</span></a>
+          </div>
+
+          <p class="mono rv rv-d4" style="margin-top: 34px; text-align:center;">
+            £82,450 starting · 3 year unlimited mileage warranty
+          </p>
+        </div>
+      </section>
+
+      <!-- ══════════════ FOOTER ══════════════ -->
+      <footer class="foot">
+        <div class="foot-inner">
+          <div class="foot-top">
+            <div class="foot-col foot-brand">
+              <a href="#" class="logo">
+                <span class="logo-emblem"></span>
+                <span class="logo-text">BMW<span>.</span>M</span>
+              </a>
+              <p>
+                BMW M GmbH. Motorsport engineering translated for the road.
+                Every M car is developed at the Nürburgring.
+              </p>
+            </div>
+
+            <div class="foot-col">
+              <h4>Models</h4>
+              <ul>
+                <li><a href="#">M2 Coupé</a></li>
+                <li><a href="#">M3 Sedan</a></li>
+                <li><a href="#">M4 Coupé</a></li>
+                <li><a href="#">M5 Sedan</a></li>
+                <li><a href="#">M8 Gran Coupé</a></li>
+              </ul>
+            </div>
+
+            <div class="foot-col">
+              <h4>Ownership</h4>
+              <ul>
+                <li><a href="#">Book a Service</a></li>
+                <li><a href="#">Warranty</a></li>
+                <li><a href="#">M Driver's Package</a></li>
+                <li><a href="#">Accessories</a></li>
+                <li><a href="#">Finance</a></li>
+              </ul>
+            </div>
+
+            <div class="foot-col">
+              <h4>Company</h4>
+              <ul>
+                <li><a href="#">About BMW M</a></li>
+                <li><a href="#">Motorsport</a></li>
+                <li><a href="#">Careers</a></li>
+                <li><a href="#">Newsroom</a></li>
+                <li><a href="#">Contact</a></li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="foot-bot">
+            <p>© 2025 BMW M GmbH — Concept Showcase</p>
+            <p>Built with WebGL · Three.js</p>
+            <p>Privacy · Terms · Cookies</p>
+          </div>
+        </div>
+      </footer>
+
+    </main>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════
+     THREE.JS
+     ═══════════════════════════════════════════════════════════ -->
+  <script type="importmap">
+    {
+  "imports": {
+    "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+    "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+  }
+}
+</script>
+
+  <script type="module">
+    import * as THREE from 'three';
+import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
+import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
+import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
+import { ShaderPass } from 'three/addons/postprocessing/ShaderPass.js';
+import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
+import { Reflector } from 'three/addons/objects/Reflector.js';
+
+/* ═══════════════════════════════════════════════════════════════
+   01. GLOBAL STATE
+   ═══════════════════════════════════════════════════════════════ */
+const APP = {
+  ready: false,
+  scroll: 0,          // raw scroll 0..1
+  smooth: 0,          // smoothed scroll
+  target: 0,
+  velocity: 0,
+  time: 0,
+  clock: null,
+  wheelSpin: 0,
+  wheelSpeed: 0,
+  mouseX: 0,
+  mouseY: 0,
+  smoothMouseX: 0,
+  smoothMouseY: 0,
+  reduced: false,
+};
+
+const PAINT_COLORS = {
+  body: 0x0b0e14,
+};
+
+/* ═══════════════════════════════════════════════════════════════
+   02. RENDERER / SCENE / CAMERA
+   ═══════════════════════════════════════════════════════════════ */
+const stage = document.getElementById('stage');
+
+const renderer = new THREE.WebGLRenderer({
+  antialias: true,
+  alpha: false,
+  powerPreference: 'high-performance',
+  stencil: false,
+});
+
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.05;
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+
+stage.appendChild(renderer.domElement);
+
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x050507);
+scene.fog = new THREE.FogExp2(0x050507, 0.018);
+
+const camera = new THREE.PerspectiveCamera(
+  38,
+  window.innerWidth / window.innerHeight,
+  0.1,
+  250
+);
+
+camera.position.set(7.2, 2.6, 8.5);
+camera.lookAt(0, 0.65, 0);
+
+/* ═══════════════════════════════════════════════════════════════
+   03. ENVIRONMENT MAP (Custom Studio)
+   ═══════════════════════════════════════════════════════════════ */
+function buildEnvironment() {
+  const pmrem = new THREE.PMREMGenerator(renderer);
+  pmrem.compileEquirectangularShader();
+
+  const envScene = new THREE.Scene();
+
+  // Dark room shell
+  const roomGeo = new THREE.BoxGeometry(40, 22, 40);
+  const roomMat = new THREE.MeshBasicMaterial({
+    color: 0x0a0a0e,
+    side: THREE.BackSide,
+  });
+  envScene.add(new THREE.Mesh(roomGeo, roomMat));
+
+  // Helper to add a light strip
+  function strip(w, h, d, x, y, z, ry, color, intensity) {
+    const geo = new THREE.BoxGeometry(w, h, d);
+    const mat = new THREE.MeshBasicMaterial({
+      color: new THREE.Color(color).multiplyScalar(intensity),
+    });
+    const mesh = new THREE.Mesh(geo, mat);
+    mesh.position.set(x, y, z);
+    mesh.rotation.y = ry;
+    envScene.add(mesh);
+    return mesh;
+  }
+
+  // Overhead softbox strips (long, thin — create the classic car-paint streaks)
+  strip(22, 0.12, 1.6, 0, 9.5, -4, 0, 0xffffff, 12);
+  strip(22, 0.12, 1.6, 0, 9.5, 4, 0, 0xffffff, 12);
+  strip(1.6, 0.12, 22, -6, 9.5, 0, 0, 0xdfe8ff, 9);
+  strip(1.6, 0.12, 22, 6, 9.5, 0, 0, 0xdfe8ff, 9);
+
+  // Cross strips
+  strip(14, 0.1, 0.9, 0, 9.2, 0, Math.PI / 2, 0xffffff, 10);
+
+  // Side fills (softer, wider)
+  strip(0.2, 5, 26, -12, 3, 0, 0, 0x2a3550, 2.2);
+  strip(0.2, 5, 26, 12, 3, 0, 0, 0x2a3550, 2.2);
+
+  // Warm back accent
+  strip(18, 3.5, 0.2, 0, 3.2, -14, 0, 0x3a1a22, 1.6);
+
+  // Cool front accent
+  strip(18, 3.5, 0.2, 0, 3.2, 14, 0, 0x162a42, 1.6);
+
+  // Floor bounce
+  const floorBounce = new THREE.Mesh(
+    new THREE.PlaneGeometry(40, 40),
+    new THREE.MeshBasicMaterial({ color: 0x111116 })
+  );
+  floorBounce.rotation.x = -Math.PI / 2;
+  floorBounce.position.y = -6;
+  envScene.add(floorBounce);
+
+  const envRT = pmrem.fromScene(envScene, 0.04);
+
+  pmrem.dispose();
+  envScene.traverse((o) => {
+    if (o.geometry) o.geometry.dispose();
+    if (o.material) o.material.dispose();
+  });
+
+  return envRT.texture;
+}
+
+const envTexture = buildEnvironment();
+scene.environment = envTexture;
+
+/* ═══════════════════════════════════════════════════════════════
+   04. MATERIALS
+   ═══════════════════════════════════════════════════════════════ */
+const MAT = {};
+
+MAT.body = new THREE.MeshPhysicalMaterial({
+  color: PAINT_COLORS.body,
+  metalness: 0.86,
+  roughness: 0.24,
+  clearcoat: 1.0,
+  clearcoatRoughness: 0.055,
+  envMapIntensity: 1.5,
+  side: THREE.DoubleSide,
+});
+
+MAT.bodyTrim = new THREE.MeshPhysicalMaterial({
+  color: 0x0a0a0c,
+  metalness: 0.55,
+  roughness: 0.42,
+  clearcoat: 0.6,
+  clearcoatRoughness: 0.15,
+  envMapIntensity: 1.0,
+});
+
+MAT.carbon = new THREE.MeshPhysicalMaterial({
+  color: 0x121214,
+  metalness: 0.42,
+  roughness: 0.34,
+  clearcoat: 0.9,
+  clearcoatRoughness: 0.12,
+  envMapIntensity: 1.3,
+});
+
+MAT.glass = new THREE.MeshPhysicalMaterial({
+  color: 0x05060a,
+  metalness: 0.05,
+  roughness: 0.045,
+  transmission: 0.0,
+  opacity: 0.94,
+  transparent: true,
+  clearcoat: 1.0,
+  clearcoatRoughness: 0.02,
+  envMapIntensity: 2.4,
+  side: THREE.DoubleSide,
+});
+
+MAT.glassLight = new THREE.MeshPhysicalMaterial({
+  color: 0x0a0e16,
+  metalness: 0.0,
+  roughness: 0.06,
+  opacity: 0.55,
+  transparent: true,
+  clearcoat: 1.0,
+  envMapIntensity: 2.0,
+  side: THREE.DoubleSide,
+});
+
+MAT.chrome = new THREE.MeshStandardMaterial({
+  color: 0xd8dade,
+  metalness: 1.0,
+  roughness: 0.11,
+  envMapIntensity: 1.9,
+});
+
+MAT.darkChrome = new THREE.MeshStandardMaterial({
+  color: 0x2a2c31,
+  metalness: 1.0,
+  roughness: 0.28,
+  envMapIntensity: 1.4,
+});
+
+MAT.grille = new THREE.MeshStandardMaterial({
+  color: 0x08080a,
+  metalness: 0.68,
+  roughness: 0.42,
+  envMapIntensity: 0.9,
+});
+
+MAT.tire = new THREE.MeshStandardMaterial({
+  color: 0x0e0e10,
+  metalness: 0.0,
+  roughness: 0.88,
+  envMapIntensity: 0.4,
+});
+
+MAT.rim = new THREE.MeshStandardMaterial({
+  color: 0x1a1c20,
+  metalness: 0.95,
+  roughness: 0.22,
+  envMapIntensity: 1.7,
+});
+
+MAT.rimAccent = new THREE.MeshStandardMaterial({
+  color: 0x3a3d44,
+  metalness: 1.0,
+  roughness: 0.16,
+  envMapIntensity: 2.0,
+});
+
+MAT.brakeDisc = new THREE.MeshStandardMaterial({
+  color: 0x4a4c52,
+  metalness: 0.92,
+  roughness: 0.42,
+  envMapIntensity: 1.0,
+});
+
+MAT.caliper = new THREE.MeshStandardMaterial({
+  color: 0xc8102e,
+  metalness: 0.5,
+  roughness: 0.36,
+  emissive: 0x2a0208,
+  emissiveIntensity: 0.3,
+});
+
+MAT.headlight = new THREE.MeshPhysicalMaterial({
+  color: 0xffffff,
+  metalness: 0.0,
+  roughness: 0.05,
+  transparent: true,
+  opacity: 0.28,
+  clearcoat: 1.0,
+  envMapIntensity: 2.5,
+});
+
+MAT.headlightInner = new THREE.MeshStandardMaterial({
+  color: 0x0a0a0c,
+  metalness: 0.8,
+  roughness: 0.28,
+});
+
+MAT.emissiveBlue = new THREE.MeshStandardMaterial({
+  color: 0x9fd4ff,
+  emissive: 0x7ec4ff,
+  emissiveIntensity: 4.5,
+  metalness: 0.0,
+  roughness: 0.4,
+});
+
+MAT.emissiveRed = new THREE.MeshStandardMaterial({
+  color: 0xff2a45,
+  emissive: 0xff0a2a,
+  emissiveIntensity: 3.6,
+  metalness: 0.0,
+  roughness: 0.4,
+});
+
+MAT.emissiveAmber = new THREE.MeshStandardMaterial({
+  color: 0xffb060,
+  emissive: 0xff8a20,
+  emissiveIntensity: 2.4,
+  metalness: 0.0,
+  roughness: 0.4,
+});
+
+MAT.exhaust = new THREE.MeshStandardMaterial({
+  color: 0x18181c,
+  metalness: 1.0,
+  roughness: 0.32,
+  envMapIntensity: 1.6,
+});
+
+MAT.interior = new THREE.MeshStandardMaterial({
+  color: 0x0c0c10,
+  metalness: 0.2,
+  roughness: 0.85,
+});
+
+/* ═══════════════════════════════════════════════════════════════
+   05. GEOMETRY UTILITIES
+   ═══════════════════════════════════════════════════════════════ */
+
+/**
+ * Build a lofted surface from a series of cross-sections.
+ *
+ * Each section: { x, yBottom, height, wBottom, wTop, archHeight?, archInner? }
+ *
+ * The cross-section is a superellipse-derived rounded rectangle whose width
+ * tapers from wBottom (at the bottom) to wTop (at the top). An optional
+ * "arch" parameter lifts the lower outer corners to create wheel arches.
+ */
+function buildLoft(sections, radialSegments = 72, capStart = true, capEnd = true) {
+  const RING_POWER = 0.62;
+  const rings = [];
+
+  for (let si = 0; si < sections.length; si++) {
+    const s = sections[si];
+    const ring = [];
+
+    for (let i = 0; i < radialSegments; i++) {
+      const t = (i / radialSegments) * Math.PI * 2 - Math.PI / 2;
+
+      const c = Math.cos(t);
+      const sn = Math.sin(t);
+
+      const zu = Math.sign(c) * Math.pow(Math.abs(c), RING_POWER);
+      const yu = Math.sign(sn) * Math.pow(Math.abs(sn), RING_POWER);
+
+      const k = (yu + 1) * 0.5;
+
+      const w = s.wBottom + (s.wTop - s.wBottom) * k;
+      const z = zu * w;
+      let y = s.yBottom + k * s.height;
+
+      // Wheel arch lift — only affects the lower outer region
+      if (s.archHeight && s.archHeight > 0) {
+        const sideN = Math.abs(z) / Math.max(0.001, s.wBottom);
+        const inner = s.archInner !== undefined ? s.archInner : 0.55;
+        const sideT = smoothstep(inner, 1.0, sideN);
+        const vertT = Math.max(0, 1 - k / 0.5);
+        y += s.archHeight * sideT * vertT;
+      }
+
+      ring.push(new THREE.Vector3(s.x, y, z));
+    }
+
+    rings.push(ring);
+  }
+
+  // ── Build buffers ──
+  const positions = [];
+  const indices = [];
+
+  for (let r = 0; r < rings.length; r++) {
+    for (let i = 0; i < radialSegments; i++) {
+      const p = rings[r][i];
+      positions.push(p.x, p.y, p.z);
+    }
+  }
+
+  for (let r = 0; r < rings.length - 1; r++) {
+    for (let i = 0; i < radialSegments; i++) {
+      const i2 = (i + 1) % radialSegments;
+
+      const a = r * radialSegments + i;
+      const b = r * radialSegments + i2;
+      const c = (r + 1) * radialSegments + i2;
+      const d = (r + 1) * radialSegments + i;
+
+      indices.push(a, c, b);
+      indices.push(a, d, c);
+    }
+  }
+
+  // ── Caps ──
+  function addCap(ringIndex, flip) {
+    const ring = rings[ringIndex];
+    let cx = 0, cy = 0, cz = 0;
+
+    for (const p of ring) { cx += p.x; cy += p.y; cz += p.z; }
+    cx /= ring.length; cy /= ring.length; cz /= ring.length;
+
+    const centreIdx = positions.length / 3;
+    positions.push(cx, cy, cz);
+
+    for (let i = 0; i < radialSegments; i++) {
+      const i2 = (i + 1) % radialSegments;
+      const a = ringIndex * radialSegments + i;
+      const b = ringIndex * radialSegments + i2;
+
+      if (flip) {
+        indices.push(centreIdx, b, a);
+      } else {
+        indices.push(centreIdx, a, b);
+      }
+    }
+  }
+
+  if (capStart) addCap(0, false);
+  if (capEnd) addCap(rings.length - 1, true);
+
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+  geo.setIndex(indices);
+  geo.computeVertexNormals();
+
+  return geo;
+}
+
+function smoothstep(edge0, edge1, x) {
+  const t = Math.min(1, Math.max(0, (x - edge0) / (edge1 - edge0)));
+  return t * t * (3 - 2 * t);
+}
+
+/** Rounded box geometry builder (avoids extra import) */
+function roundedBox(w, h, d, r = 0.05, seg = 3) {
+  const shape = new THREE.Shape();
+  const x = -w / 2, y = -h / 2;
+
+  shape.moveTo(x + r, y);
+  shape.lineTo(x + w - r, y);
+  shape.quadraticCurveTo(x + w, y, x + w, y + r);
+  shape.lineTo(x + w, y + h - r);
+  shape.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+  shape.lineTo(x + r, y + h);
+  shape.quadraticCurveTo(x, y + h, x, y + h - r);
+  shape.lineTo(x, y + r);
+  shape.quadraticCurveTo(x, y, x + r, y);
+
+  const geo = new THREE.ExtrudeGeometry(shape, {
+    depth: d - r * 2,
+    bevelEnabled: true,
+    bevelThickness: r,
+    bevelSize: r,
+    bevelSegments: seg,
+    curveSegments: seg + 2,
+  });
+
+  geo.center();
+  return geo;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   06. CAR — BODY SECTIONS
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Lower body: full length, defines the silhouette from the side */
+const BODY_SECTIONS = [
+  { x: -2.28, yBottom: 0.34, height: 0.40, wBottom: 0.52, wTop: 0.60 },
+  { x: -2.18, yBottom: 0.28, height: 0.50, wBottom: 0.74, wTop: 0.78 },
+  { x: -2.02, yBottom: 0.25, height: 0.55, wBottom: 0.85, wTop: 0.88 },
+  { x: -1.80, yBottom: 0.23, height: 0.59, wBottom: 0.90, wTop: 0.91 },
+  { x: -1.50, yBottom: 0.22, height: 0.62, wBottom: 0.91, wTop: 0.90 },
+  { x: -1.18, yBottom: 0.22, height: 0.63, wBottom: 0.91, wTop: 0.89 },
+  { x: -0.86, yBottom: 0.22, height: 0.65, wBottom: 0.91, wTop: 0.88 },
+  { x: -0.50, yBottom: 0.22, height: 0.67, wBottom: 0.91, wTop: 0.89 },
+  { x: -0.12, yBottom: 0.22, height: 0.69, wBottom: 0.91, wTop: 0.90 },
+  { x:  0.30, yBottom: 0.23, height: 0.68, wBottom: 0.91, wTop: 0.90 },
+  { x:  0.70, yBottom: 0.24, height: 0.65, wBottom: 0.90, wTop: 0.88 },
+  { x:  1.10, yBottom: 0.26, height: 0.61, wBottom: 0.89, wTop: 0.87 },
+  { x:  1.50, yBottom: 0.28, height: 0.56, wBottom: 0.87, wTop: 0.86 },
+  { x:  1.86, yBottom: 0.30, height: 0.51, wBottom: 0.83, wTop: 0.84 },
+  { x:  2.10, yBottom: 0.32, height: 0.46, wBottom: 0.77, wTop: 0.79 },
+  { x:  2.26, yBottom: 0.35, height: 0.38, wBottom: 0.62, wTop: 0.67 },
+];
+
+/* Greenhouse: glass cabin volume */
+const GLASS_SECTIONS = [
+  { x: -1.30, yBottom: 0.83, height: 0.10, wBottom: 0.75, wTop: 0.68 },
+  { x: -1.16, yBottom: 0.84, height: 0.20, wBottom: 0.77, wTop: 0.67 },
+  { x: -0.98, yBottom: 0.85, height: 0.32, wBottom: 0.78, wTop: 0.65 },
+  { x: -0.76, yBottom: 0.85, height: 0.42, wBottom: 0.79, wTop: 0.62 },
+  { x: -0.50, yBottom: 0.85, height: 0.46, wBottom: 0.79, wTop: 0.60 },
+  { x: -0.20, yBottom: 0.85, height: 0.47, wBottom: 0.79, wTop: 0.59 },
+  { x:  0.12, yBottom: 0.85, height: 0.46, wBottom: 0.79, wTop: 0.60 },
+  { x:  0.40, yBottom: 0.85, height: 0.42, wBottom: 0.78, wTop: 0.62 },
+  { x:  0.64, yBottom: 0.85, height: 0.33, wBottom: 0.77, wTop: 0.65 },
+  { x:  0.82, yBottom: 0.85, height: 0.18, wBottom: 0.75, wTop: 0.67 },
+  { x:  0.94, yBottom: 0.85, height: 0.06, wBottom: 0.73, wTop: 0.68 },
+];
+
+/* Roof panel: body-coloured slab on top of the glass */
+const ROOF_SECTIONS = [
+  { x: -0.86, yBottom: 1.14, height: 0.16, wBottom: 0.66, wTop: 0.62 },
+  { x: -0.70, yBottom: 1.19, height: 0.14, wBottom: 0.65, wTop: 0.60 },
+  { x: -0.44, yBottom: 1.24, height: 0.10, wBottom: 0.64, wTop: 0.58 },
+  { x: -0.16, yBottom: 1.26, height: 0.08, wBottom: 0.63, wTop: 0.57 },
+  { x:  0.12, yBottom: 1.25, height: 0.09, wBottom: 0.63, wTop: 0.58 },
+  { x:  0.34, yBottom: 1.22, height: 0.11, wBottom: 0.64, wTop: 0.60 },
+];
+
+/* ═══════════════════════════════════════════════════════════════
+   07. CAR — SUB-ASSEMBLIES
+   ═══════════════════════════════════════════════════════════════ */
+
+function makeTireGeometry(R = 0.365, W = 0.135) {
+  const profile = [
+    new THREE.Vector2(0.235, -W),
+    new THREE.Vector2(0.285, -W),
+    new THREE.Vector2(0.330, -W * 0.94),
+    new THREE.Vector2(0.356, -W * 0.68),
+    new THREE.Vector2(R, -W * 0.28),
+    new THREE.Vector2(R, W * 0.28),
+    new THREE.Vector2(0.356, W * 0.68),
+    new THREE.Vector2(0.330, W * 0.94),
+    new THREE.Vector2(0.285, W),
+    new THREE.Vector2(0.235, W),
+  ];
+
+  const geo = new THREE.LatheGeometry(profile, 56);
+  geo.rotateX(Math.PI / 2);
+  return geo;
+}
+
+function createWheel(isFront = false) {
+  const g = new THREE.Group();
+
+  const R = 0.365;
+  const RIM_R = 0.255;
+  const W = 0.135;
+
+  /* ── Tire ── */
+  const tire = new THREE.Mesh(makeTireGeometry(R, W), MAT.tire);
+  tire.castShadow = true;
+  tire.receiveShadow = true;
+  g.add(tire);
+
+  /* ── Rim barrel ── */
+  const barrelGeo = new THREE.CylinderGeometry(RIM_R, RIM_R, W * 1.55, 48, 1, true);
+  barrelGeo.rotateX(Math.PI / 2);
+  const barrel = new THREE.Mesh(barrelGeo, MAT.rim);
+  barrel.castShadow = true;
+  g.add(barrel);
+
+  /* ── Rim lip ── */
+  const lipGeo = new THREE.TorusGeometry(RIM_R, 0.014, 10, 56);
+  const lip = new THREE.Mesh(lipGeo, MAT.rimAccent);
+  lip.position.z = W * 0.72;
+  g.add(lip);
+
+  const lipInner = lip.clone();
+  lipInner.position.z = -W * 0.72;
+  g.add(lipInner);
+
+  /* ── Spokes (double 5-spoke) ── */
+  const SPOKES = 10;
+  const spokeGeo = new THREE.BoxGeometry(0.175, 0.036, 0.055);
+  spokeGeo.translate(0.145, 0, 0);
+
+  for (let i = 0; i < SPOKES; i++) {
+    const angle = (i / SPOKES) * Math.PI * 2;
+    const spoke = new THREE.Mesh(spokeGeo, MAT.rim);
+    spoke.rotation.z = angle;
+    spoke.rotation.x = (i % 2 === 0 ? 1 : -1) * 0.13;
+    spoke.position.z = W * 0.36;
+    spoke.castShadow = true;
+    g.add(spoke);
+
+    // Mirror spoke for depth
+    const spokeB = new THREE.Mesh(spokeGeo, MAT.rimAccent);
+    spokeB.scale.set(0.85, 0.7, 0.5);
+    spokeB.rotation.z = angle;
+    spokeB.rotation.x = (i % 2 === 0 ? 1 : -1) * 0.13;
+    spokeB.position.z = -W * 0.36;
+    g.add(spokeB);
+  }
+
+  /* ── Hub cap ── */
+  const hubGeo = new THREE.CylinderGeometry(0.072, 0.072, 0.05, 28);
+  hubGeo.rotateX(Math.PI / 2);
+  const hub = new THREE.Mesh(hubGeo, MAT.rimAccent);
+  hub.position.z = W * 0.5;
+  g.add(hub);
+
+  /* ── Roundel ── */
+  const roundel = createRoundel(0.058);
+  roundel.position.z = W * 0.5 + 0.028;
+  g.add(roundel);
+
+  /* ── Brake disc ── */
+  const discGeo = new THREE.CylinderGeometry(0.215, 0.215, 0.026, 40);
+  discGeo.rotateX(Math.PI / 2);
+  const disc = new THREE.Mesh(discGeo, MAT.brakeDisc);
+  disc.position.z = -0.012;
+  g.add(disc);
+
+  /* ── Drilled holes on disc ── */
+  const holeGeo = new THREE.CylinderGeometry(0.014, 0.014, 0.04, 8);
+  holeGeo.rotateX(Math.PI / 2);
+  for (let i = 0; i < 24; i++) {
+    const a = (i / 24) * Math.PI * 2;
+    const hole = new THREE.Mesh(holeGeo, MAT.bodyTrim);
+    hole.position.set(Math.cos(a) * 0.175, Math.sin(a) * 0.175, -0.012);
+    g.add(hole);
+  }
+
+  /* ── Caliper ── */
+  const caliperGeo = roundedBox(0.10, 0.19, 0.06, 0.02, 2);
+  const caliper = new THREE.Mesh(caliperGeo, MAT.caliper);
+  caliper.position.set(isFront ? 0.14 : -0.14, 0.02, -0.022);
+  caliper.rotation.z = isFront ? 0.25 : -0.25;
+  g.add(caliper);
+
+  return g;
+}
+
+function createRoundel(radius = 0.06) {
+  const c = document.createElement('canvas');
+  c.width = 256;
+  c.height = 256;
+  const ctx = c.getContext('2d');
+
+  const cx = 128, cy = 128;
+
+  // Outer dark ring
+  ctx.beginPath();
+  ctx.arc(cx, cy, 124, 0, Math.PI * 2);
+  ctx.fillStyle = '#141418';
+  ctx.fill();
+
+  // Metallic ring
+  const ringGrad = ctx.createLinearGradient(0, 0, 256, 256);
+  ringGrad.addColorStop(0, '#e8eaee');
+  ringGrad.addColorStop(0.5, '#8a8e96');
+  ringGrad.addColorStop(1, '#d4d8de');
+  ctx.beginPath();
+  ctx.arc(cx, cy, 116, 0, Math.PI * 2);
+  ctx.fillStyle = ringGrad;
+  ctx.fill();
+
+  // Inner black
+  ctx.beginPath();
+  ctx.arc(cx, cy, 98, 0, Math.PI * 2);
+  ctx.fillStyle = '#0a0a0c';
+  ctx.fill();
+
+  // Quadrants
+  const qr = 74;
+
+  ctx.save();
+  ctx.beginPath();
+  ctx.arc(cx, cy, qr, 0, Math.PI * 2);
+  ctx.clip();
+
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(cx - qr, cy - qr, qr, qr);        // top-left white
+  ctx.fillRect(cx, cy, qr, qr);                  // bottom-right white
+
+  ctx.fillStyle = '#1c69d4';
+  ctx.fillRect(cx, cy - qr, qr, qr);             // top-right blue
+  ctx.fillRect(cx - qr, cy, qr, qr);             // bottom-left blue
+
+  ctx.restore();
+
+  // Centre ring
+  ctx.beginPath();
+  ctx.arc(cx, cy, qr, 0, Math.PI * 2);
+  ctx.strokeStyle = '#0a0a0c';
+  ctx.lineWidth = 4;
+  ctx.stroke();
+
+  const tex = new THREE.CanvasTexture(c);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  tex.anisotropy = 8;
+
+  const geo = new THREE.CircleGeometry(radius, 32);
+  const mat = new THREE.MeshStandardMaterial({
+    map: tex,
+    metalness: 0.75,
+    roughness: 0.28,
+    envMapIntensity: 1.4,
+  });
+
+  return new THREE.Mesh(geo, mat);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   08. BUILD THE CAR
+   ═══════════════════════════════════════════════════════════════ */
+function buildCar() {
+  const car = new THREE.Group();
+  car.name = 'M4';
+
+  /* ── Main body ── */
+  const bodyGeo = buildLoft(BODY_SECTIONS, 80, true, true);
+  const body = new THREE.Mesh(bodyGeo, MAT.body);
+  body.castShadow = true;
+  body.receiveShadow = true;
+  body.name = 'body';
+  car.add(body);
+
+  /* ── Wheel arch flares ── */
+  const archXs = [1.36, -1.36];
+  const archZ = 0.865;
+
+  for (const ax of archXs) {
+    for (const side of [-1, 1]) {
+      const archGeo = new THREE.TorusGeometry(0.44, 0.072, 12, 40, Math.PI * 1.05);
+      const arch = new THREE.Mesh(archGeo, MAT.body);
+      arch.position.set(ax, 0.335, side * archZ);
+      arch.rotation.y = Math.PI / 2;
+      arch.rotation.z = -Math.PI / 2 + 0.025;
+      arch.castShadow = true;
+      car.add(arch);
+
+      // Dark inner arch liner
+      const linerGeo = new THREE.TorusGeometry(0.42, 0.048, 10, 36, Math.PI * 1.02);
+      const liner = new THREE.Mesh(linerGeo, MAT.bodyTrim);
+      liner.position.set(ax, 0.335, side * (archZ - 0.055));
+      liner.rotation.y = Math.PI / 2;
+      liner.rotation.z = -Math.PI / 2 + 0.025;
+      car.add(liner);
+    }
+  }
+
+  /* ── Side skirts ── */
+  for (const side of [-1, 1]) {
+    const skirtGeo = roundedBox(2.05, 0.13, 0.10, 0.035, 3);
+    const skirt = new THREE.Mesh(skirtGeo, MAT.carbon);
+    skirt.position.set(0, 0.235, side * 0.895);
+    skirt.castShadow = true;
+    car.add(skirt);
+  }
+
+  /* ── Greenhouse glass ── */
+  const glassGeo = buildLoft(GLASS_SECTIONS, 64, false, false);
+  const glass = new THREE.Mesh(glassGeo, MAT.glass);
+  glass.name = 'glass';
+  car.add(glass);
+
+  /* ── Roof panel ── */
+  const roofGeo = buildLoft(ROOF_SECTIONS, 56, true, true);
+  const roof = new THREE.Mesh(roofGeo, MAT.carbon);
+  roof.castShadow = true;
+  car.add(roof);
+
+  /* ── A-pillars ── */
+  for (const side of [-1, 1]) {
+    const pillarGeo = roundedBox(0.72, 0.075, 0.062, 0.02, 2);
+    const pillar = new THREE.Mesh(pillarGeo, MAT.carbon);
+    pillar.position.set(0.62, 1.05, side * 0.625);
+    pillar.rotation.z = 0.62;
+    pillar.rotation.y = side * 0.05;
+    pillar.castShadow = true;
+    car.add(pillar);
+  }
+
+  /* ── C-pillars ── */
+  for (const side of [-1, 1]) {
+    const pillarGeo = roundedBox(0.62, 0.09, 0.07, 0.025, 2);
+    const pillar = new THREE.Mesh(pillarGeo, MAT.carbon);
+    pillar.position.set(-0.90, 1.02, side * 0.645);
+    pillar.rotation.z = -0.68;
+    pillar.rotation.y = -side * 0.06;
+    pillar.castShadow = true;
+    car.add(pillar);
+  }
+
+  /* ── B-pillars ── */
+  for (const side of [-1, 1]) {
+    const pillarGeo = roundedBox(0.075, 0.40, 0.06, 0.02, 2);
+    const pillar = new THREE.Mesh(pillarGeo, MAT.bodyTrim);
+    pillar.position.set(-0.22, 1.04, side * 0.72);
+    car.add(pillar);
+  }
+
+  /* ── Kidney grilles ── */
+  for (const side of [-1, 1]) {
+    const grilleGroup = new THREE.Group();
+
+    // Frame
+    const frameGeo = roundedBox(0.30, 0.42, 0.09, 0.055, 3);
+    const frame = new THREE.Mesh(frameGeo, MAT.grille);
+    frame.castShadow = true;
+    grilleGroup.add(frame);
+
+    // Vertical slats
+    for (let i = 0; i < 9; i++) {
+      const slatGeo = new THREE.BoxGeometry(0.014, 0.36, 0.05);
+      const slat = new THREE.Mesh(slatGeo, MAT.darkChrome);
+      slat.position.x = -0.115 + i * 0.029;
+      slat.position.z = 0.048;
+      grilleGroup.add(slat);
+    }
+
+    grilleGroup.position.set(2.215, 0.615, side * 0.235);
+    grilleGroup.rotation.y = side * -0.16;
+    grilleGroup.rotation.z = side * 0.04;
+    car.add(grilleGroup);
+  }
+
+  /* ── Front bumper intakes ── */
+  for (const side of [-1, 1]) {
+    const intakeGeo = roundedBox(0.30, 0.20, 0.14, 0.045, 3);
+    const intake = new THREE.Mesh(intakeGeo, MAT.grille);
+    intake.position.set(2.185, 0.40, side * 0.60);
+    intake.rotation.y = side * -0.24;
+    car.add(intake);
+
+    // Mesh inside
+    const meshGeo = new THREE.PlaneGeometry(0.24, 0.15);
+    const mesh = new THREE.Mesh(meshGeo, MAT.bodyTrim);
+    mesh.position.set(2.252, 0.40, side * 0.615);
+    mesh.rotation.y = side * -0.24;
+    car.add(mesh);
+  }
+
+  /* ── Front splitter ── */
+  const splitterGeo = roundedBox(0.62, 0.035, 1.62, 0.014, 2);
+  const splitter = new THREE.Mesh(splitterGeo, MAT.carbon);
+  splitter.position.set(2.10, 0.235, 0);
+  splitter.castShadow = true;
+  car.add(splitter);
+
+  /* ── Splitter side blades ── */
+  for (const side of [-1, 1]) {
+    const bladeGeo = roundedBox(0.34, 0.05, 0.06, 0.02, 2);
+    const blade = new THREE.Mesh(bladeGeo, MAT.carbon);
+    blade.position.set(2.16, 0.265, side * 0.82);
+    blade.rotation.y = side * -0.32;
+    car.add(blade);
+  }
+
+  /* ── Headlights ── */
+  for (const side of [-1, 1]) {
+    const hlGroup = new THREE.Group();
+
+    // Housing
+    const housingGeo = roundedBox(0.14, 0.135, 0.44, 0.045, 3);
+    const housing = new THREE.Mesh(housingGeo, MAT.headlightInner);
+    hlGroup.add(housing);
+
+    // Outer lens
+    const lensGeo = roundedBox(0.05, 0.115, 0.40, 0.035, 3);
+    const lens = new THREE.Mesh(lensGeo, MAT.headlight);
+    lens.position.x = 0.075;
+    hlGroup.add(lens);
+
+    // Laser DRL strips (two)
+    for (let i = 0; i < 2; i++) {
+      const drlGeo = new THREE.BoxGeometry(0.025, 0.022, 0.30);
+      const drl = new THREE.Mesh(drlGeo, MAT.emissiveBlue);
+      drl.position.set(0.095, 0.028 - i * 0.055, 0);
+      hlGroup.add(drl);
+    }
+
+    // Amber indicator
+    const indGeo = new THREE.BoxGeometry(0.02, 0.016, 0.07);
+    const ind = new THREE.Mesh(indGeo, MAT.emissiveAmber);
+    ind.position.set(0.098, -0.045, 0.135);
+    hlGroup.add(ind);
+
+    hlGroup.position.set(2.145, 0.705, side * 0.625);
+    hlGroup.rotation.y = side * -0.14;
+    car.add(hlGroup);
+  }
+
+  /* ── Taillights ── */
+  for (const side of [-1, 1]) {
+    const tlGroup = new THREE.Group();
+
+    // Dark housing
+    const housingGeo = roundedBox(0.10, 0.13, 0.46, 0.04, 3);
+    const housing = new THREE.Mesh(housingGeo, MAT.bodyTrim);
+    tlGroup.add(housing);
+
+    // Main L-shaped light bar
+    const barHGeo = new THREE.BoxGeometry(0.03, 0.026, 0.40);
+    const barH = new THREE.Mesh(barHGeo, MAT.emissiveRed);
+    barH.position.set(-0.055, 0.025, 0);
+    tlGroup.add(barH);
+
+    const barVGeo = new THREE.BoxGeometry(0.03, 0.085, 0.026);
+    const barV = new THREE.Mesh(barVGeo, MAT.emissiveRed);
+    barV.position.set(-0.055, -0.02, 0.19);
+    tlGroup.add(barV);
+
+    // Secondary element
+    const secGeo = new THREE.BoxGeometry(0.025, 0.018, 0.30);
+    const sec = new THREE.Mesh(secGeo, MAT.emissiveRed);
+    sec.position.set(-0.055, -0.035, 0);
+    tlGroup.add(sec);
+
+    tlGroup.position.set(-2.245, 0.70, side * 0.585);
+    tlGroup.rotation.y = side * 0.14;
+    car.add(tlGroup);
+  }
+
+  /* ── Rear diffuser ── */
+  const diffuserGeo = roundedBox(0.55, 0.16, 1.42, 0.05, 3);
+  const diffuser = new THREE.Mesh(diffuserGeo, MAT.carbon);
+  diffuser.position.set(-2.06, 0.325, 0);
+  diffuser.castShadow = true;
+  car.add(diffuser);
+
+  // Diffuser fins
+  for (let i = -3; i <= 3; i++) {
+    const finGeo = new THREE.BoxGeometry(0.44, 0.11, 0.018);
+    const fin = new THREE.Mesh(finGeo, MAT.bodyTrim);
+    fin.position.set(-2.10, 0.325, i * 0.175);
+    car.add(fin);
+  }
+
+  /* ── Quad exhausts ── */
+  for (const side of [-1, 1]) {
+    for (let i = 0; i < 2; i++) {
+      const z = side * (0.36 + i * 0.155);
+
+      const pipeGeo = new THREE.CylinderGeometry(0.052, 0.056, 0.22, 24, 1, true);
+      pipeGeo.rotateZ(Math.PI / 2);
+      const pipe = new THREE.Mesh(pipeGeo, MAT.exhaust);
+      pipe.position.set(-2.30, 0.375, z);
+      car.add(pipe);
+
+      const tipGeo = new THREE.TorusGeometry(0.052, 0.008, 8, 24);
+      const tip = new THREE.Mesh(tipGeo, MAT.chrome);
+      tip.position.set(-2.405, 0.375, z);
+      tip.rotation.y = Math.PI / 2;
+      car.add(tip);
+
+      const innerGeo = new THREE.CircleGeometry(0.044, 20);
+      const inner = new THREE.Mesh(innerGeo, MAT.grille);
+      inner.position.set(-2.40, 0.375, z);
+      inner.rotation.y = -Math.PI / 2;
+      car.add(inner);
+    }
+  }
+
+  /* ── Rear spoiler lip ── */
+  const spoilerGeo = roundedBox(0.28, 0.035, 1.32, 0.014, 2);
+  const spoiler = new THREE.Mesh(spoilerGeo, MAT.carbon);
+  spoiler.position.set(-1.98, 0.845, 0);
+  spoiler.rotation.z = -0.06;
+  spoiler.castShadow = true;
+  car.add(spoiler);
+
+  /* ── Bonnet power dome ── */
+  const domeGeo = roundedBox(1.05, 0.055, 0.62, 0.05, 3);
+  const dome = new THREE.Mesh(domeGeo, MAT.body);
+  dome.position.set(1.42, 0.885, 0);
+  dome.castShadow = true;
+  car.add(dome);
+
+  /* ── Bonnet vents ── */
+  for (const side of [-1, 1]) {
+    const ventGeo = roundedBox(0.20, 0.02, 0.13, 0.012, 2);
+    const vent = new THREE.Mesh(ventGeo, MAT.grille);
+    vent.position.set(1.06, 0.905, side * 0.42);
+    car.add(vent);
+  }
+
+  /* ── Side gills (M badge area) ── */
+  for (const side of [-1, 1]) {
+    const gillGeo = roundedBox(0.28, 0.075, 0.045, 0.018, 2);
+    const gill = new THREE.Mesh(gillGeo, MAT.grille);
+    gill.position.set(0.72, 0.62, side * 0.905);
+    gill.rotation.y = side * 0.05;
+    car.add(gill);
+
+    // Chrome accent strip
+    const accentGeo = new THREE.BoxGeometry(0.24, 0.012, 0.02);
+    const accent = new THREE.Mesh(accentGeo, MAT.chrome);
+    accent.position.set(0.72, 0.645, side * 0.925);
+    car.add(accent);
+  }
+
+  /* ── Door handles ── */
+  for (const side of [-1, 1]) {
+    const handleGeo = roundedBox(0.19, 0.035, 0.045, 0.014, 2);
+    const handle = new THREE.Mesh(handleGeo, MAT.bodyTrim);
+    handle.position.set(0.05, 0.70, side * 0.915);
+    car.add(handle);
+  }
+
+  /* ── Door shut lines ── */
+  for (const side of [-1, 1]) {
+    const lineGeo = new THREE.BoxGeometry(0.008, 0.62, 0.008);
+    const line = new THREE.Mesh(lineGeo, MAT.bodyTrim);
+    line.position.set(0.68, 0.55, side * 0.912);
+    line.rotation.z = 0.06;
+    car.add(line);
+  }
+
+  /* ── Wing mirrors ── */
+  for (const side of [-1, 1]) {
+    const mirrorGroup = new THREE.Group();
+
+    // Stalk
+    const stalkGeo = roundedBox(0.10, 0.032, 0.14, 0.012, 2);
+    const stalk = new THREE.Mesh(stalkGeo, MAT.carbon);
+    stalk.position.set(0, 0, 0.075);
+    mirrorGroup.add(stalk);
+
+    // Housing
+    const capGeo = roundedBox(0.19, 0.10, 0.11, 0.035, 3);
+    const cap = new THREE.Mesh(capGeo, MAT.carbon);
+    cap.position.set(0.015, 0.035, 0.175);
+    cap.castShadow = true;
+    mirrorGroup.add(cap);
+
+    // Mirror glass
+    const glassGeo = new THREE.PlaneGeometry(0.13, 0.075);
+    const mGlass = new THREE.Mesh(glassGeo, MAT.chrome);
+    mGlass.position.set(-0.075, 0.035, 0.175);
+    mGlass.rotation.y = -Math.PI / 2;
+    mirrorGroup.add(mGlass);
+
+    mirrorGroup.position.set(0.60, 0.955, side * 0.855);
+    mirrorGroup.rotation.y = side * -0.12;
+    mirrorGroup.scale.z = side;
+    car.add(mirrorGroup);
+  }
+
+  /* ── Door mirrors shadow-less M badge ── */
+  const badgeGeo = new THREE.BoxGeometry(0.09, 0.022, 0.012);
+  for (const side of [-1, 1]) {
+    const badge = new THREE.Mesh(badgeGeo, MAT.chrome);
+    badge.position.set(-2.14, 0.72, side * 0.70);
+    car.add(badge);
+  }
+
+  /* ── Front roundel on bonnet ── */
+  const hoodRoundel = createRoundel(0.072);
+  hoodRoundel.rotation.x = -Math.PI / 2;
+  hoodRoundel.rotation.z = Math.PI;
+  hoodRoundel.position.set(2.06, 0.925, 0);
+  car.add(hoodRoundel);
+
+  /* ── Rear roundel ── */
+  const trunkRoundel = createRoundel(0.062);
+  trunkRoundel.rotation.y = -Math.PI / 2;
+  trunkRoundel.position.set(-2.30, 0.72, 0);
+  car.add(trunkRoundel);
+
+  /* ── Underbody floor (hides internals) ── */
+  const floorGeo = new THREE.BoxGeometry(3.9, 0.04, 1.5);
+  const floor = new THREE.Mesh(floorGeo, MAT.bodyTrim);
+  floor.position.set(0, 0.20, 0);
+  car.add(floor);
+
+  /* ── Interior silhouette (dark shapes visible through glass) ── */
+  const dashGeo = roundedBox(0.5, 0.16, 1.24, 0.05, 2);
+  const dash = new THREE.Mesh(dashGeo, MAT.interior);
+  dash.position.set(0.52, 0.90, 0);
+  car.add(dash);
+
+  for (const side of [-1, 1]) {
+    // Seat back
+    const seatBackGeo = roundedBox(0.14, 0.42, 0.36, 0.06, 2);
+    const seatBack = new THREE.Mesh(seatBackGeo, MAT.interior);
+    seatBack.position.set(-0.30, 1.00, side * 0.33);
+    seatBack.rotation.z = -0.14;
+    car.add(seatBack);
+
+    // Seat base
+    const seatBaseGeo = roundedBox(0.40, 0.10, 0.34, 0.04, 2);
+    const seatBase = new THREE.Mesh(seatBaseGeo, MAT.interior);
+    seatBase.position.set(-0.16, 0.86, side * 0.33);
+    car.add(seatBase);
+
+    // Headrest
+    const headGeo = roundedBox(0.13, 0.15, 0.20, 0.05, 2);
+    const head = new THREE.Mesh(headGeo, MAT.interior);
+    head.position.set(-0.34, 1.25, side * 0.33);
+    car.add(head);
+
+    // Steering wheel area
+    if (side === 1) {
+      const swGeo = new THREE.TorusGeometry(0.15, 0.022, 8, 28);
+      const sw = new THREE.Mesh(swGeo, MAT.interior);
+      sw.position.set(0.42, 1.02, side * 0.31);
+      sw.rotation.y = Math.PI / 2;
+      sw.rotation.x = 0.3;
+      car.add(sw);
+    }
+  }
+
+  /* ── Roll cage hint behind glass ── */
+  const barGeo = new THREE.BoxGeometry(0.035, 0.035, 1.28);
+  const bar = new THREE.Mesh(barGeo, MAT.bodyTrim);
+  bar.position.set(-0.68, 1.05, 0);
+  car.add(bar);
+
+  return car;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   09. WHEELS
+   ═══════════════════════════════════════════════════════════════ */
+const wheelGroups = [];
+
+function attachWheels(car) {
+  const positions = [
+    { x: 1.36, z: 0.845, front: true, steer: true },
+    { x: 1.36, z: -0.845, front: true, steer: true },
+    { x: -1.36, z: 0.845, front: false, steer: false },
+    { x: -1.36, z: -0.845, front: false, steer: false },
+  ];
+
+  for (const p of positions) {
+    const pivot = new THREE.Group();
+    pivot.position.set(p.x, 0.365, p.z);
+
+    const wheel = createWheel(p.front);
+
+    // Right-side wheels face the other way
+    if (p.z < 0) wheel.rotation.y = Math.PI;
+
+    pivot.add(wheel);
+    car.add(pivot);
+
+    wheelGroups.push({
+      pivot,
+      wheel,
+      front: p.front,
+      steer: p.steer,
+      baseY: 0.365,
+    });
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   10. SCENE ASSEMBLY
+   ═══════════════════════════════════════════════════════════════ */
+const car = buildCar();
+attachWheels(car);
+scene.add(car);
+
+/* Slight initial yaw so the hero reads as a 3/4 */
+car.rotation.y = -0.12;
+
+/* ═══════════════════════════════════════════════════════════════
+   11. LIGHTING
+   ═══════════════════════════════════════════════════════════════ */
+const keyLight = new THREE.DirectionalLight(0xffffff, 3.2);
+keyLight.position.set(6, 10, 7);
+keyLight.castShadow = true;
+keyLight.shadow.mapSize.set(2048, 2048);
+keyLight.shadow.camera.near = 1;
+keyLight.shadow.camera.far = 40;
+keyLight.shadow.camera.left = -9;
+keyLight.shadow.camera.right = 9;
+keyLight.shadow.camera.top = 9;
+keyLight.shadow.camera.bottom = -9;
+keyLight.shadow.bias = -0.0007;
+keyLight.shadow.normalBias = 0.02;
+scene.add(keyLight);
+
+const fillLight = new THREE.DirectionalLight(0x4d7fff, 1.4);
+fillLight.position.set(-8, 5, -6);
+scene.add(fillLight);
+
+const rimLight = new THREE.DirectionalLight(0xff3b5c, 1.6);
+rimLight.position.set(-5, 3, 9);
+scene.add(rimLight);
+
+const topLight = new THREE.DirectionalLight(0xffffff, 1.1);
+topLight.position.set(0, 14, 0);
+scene.add(topLight);
+
+const ambient = new THREE.AmbientLight(0x404860, 0.35);
+scene.add(ambient);
+
+/* Ground bounce */
+const bounceLight = new THREE.PointLight(0x2a3a5a, 2.5, 12, 2);
+bounceLight.position.set(0, 0.4, 0);
+scene.add(bounceLight);
+
+/* ═══════════════════════════════════════════════════════════════
+   12. GROUND
+   ═══════════════════════════════════════════════════════════════ */
+function buildGround() {
+  const group = new THREE.Group();
+
+  /* Mirror plane */
+  const mirrorGeo = new THREE.CircleGeometry(26, 64);
+  const mirror = new Reflector(mirrorGeo, {
+    clipBias: 0.0035,
+    textureWidth: 1024,
+    textureHeight: 1024,
+    color: 0x30343e,
+  });
+  mirror.rotation.x = -Math.PI / 2;
+  mirror.position.y = 0.001;
+  group.add(mirror);
+
+  /* Darkening overlay with radial fade */
+  const c = document.createElement('canvas');
+  c.width = 512;
+  c.height = 512;
+  const ctx = c.getContext('2d');
+  const grad = ctx.createRadialGradient(256, 256, 40, 256, 256, 256);
+  grad.addColorStop(0, 'rgba(8,8,12,0.62)');
+  grad.addColorStop(0.45, 'rgba(8,8,12,0.86)');
+  grad.addColorStop(1, 'rgba(5,5,7,1)');
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, 512, 512);
+
+  const fadeTex = new THREE.CanvasTexture(c);
+  fadeTex.colorSpace = THREE.SRGBColorSpace;
+
+  const fadeGeo = new THREE.CircleGeometry(26, 64);
+  const fadeMat = new THREE.MeshBasicMaterial({
+    map: fadeTex,
+    transparent: true,
+    depthWrite: false,
+  });
+  const fade = new THREE.Mesh(fadeGeo, fadeMat);
+  fade.rotation.x = -Math.PI / 2;
+  fade.position.y = 0.002;
+  group.add(fade);
+
+  /* Turntable ring */
+  const ringGeo = new THREE.RingGeometry(4.6, 4.66, 128);
+  const ringMat = new THREE.MeshBasicMaterial({
+    color: 0x2a3040,
+    transparent: true,
+    opacity: 0.55,
+    side: THREE.DoubleSide,
+  });
+  const ring = new THREE.Mesh(ringGeo, ringMat);
+  ring.rotation.x = -Math.PI / 2;
+  ring.position.y = 0.006;
+  group.add(ring);
+
+  const ring2Geo = new THREE.RingGeometry(5.2, 5.22, 128);
+  const ring2 = new THREE.Mesh(ring2Geo, new THREE.MeshBasicMaterial({
+    color: 0x1a1e28,
+    transparent: true,
+    opacity: 0.4,
+    side: THREE.DoubleSide,
+  }));
+  ring2.rotation.x = -Math.PI / 2;
+  ring2.position.y = 0.006;
+  group.add(ring2);
+
+  return group;
+}
+
+const ground = buildGround();
+scene.add(ground);
+
+/* ═══════════════════════════════════════════════════════════════
+   13. ATMOSPHERIC PARTICLES
+   ═══════════════════════════════════════════════════════════════ */
+function buildParticles() {
+  const COUNT = 700;
+  const positions = new Float32Array(COUNT * 3);
+  const sizes = new Float32Array(COUNT);
+  const speeds = new Float32Array(COUNT);
+
+  for (let i = 0; i < COUNT; i++) {
+    const r = 3 + Math.random() * 16;
+    const theta = Math.random() * Math.PI * 2;
+    const y = Math.random() * 9 - 0.5;
+
+    positions[i * 3] = Math.cos(theta) * r;
+    positions[i * 3 + 1] = y;
+    positions[i * 3 + 2] = Math.sin(theta) * r;
+
+    sizes[i] = 0.012 + Math.random() * 0.035;
+    speeds[i] = 0.02 + Math.random() * 0.09;
+  }
+
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+  geo.setAttribute('size', new THREE.BufferAttribute(sizes, 1));
+
+  const mat = new THREE.PointsMaterial({
+    color: 0xaac4ff,
+    size: 0.032,
+    sizeAttenuation: true,
+    transparent: true,
+    opacity: 0.42,
+    depthWrite: false,
+    blending: THREE.AdditiveBlending,
+  });
+
+  const points = new THREE.Points(geo, mat);
+  points.userData.speeds = speeds;
+  return points;
+}
+
+const particles = buildParticles();
+scene.add(particles);
+
+/* ═══════════════════════════════════════════════════════════════
+   14. POST-PROCESSING
+   ═══════════════════════════════════════════════════════════════ */
+const composer = new EffectComposer(renderer);
+composer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+composer.setSize(window.innerWidth, window.innerHeight);
+
+const renderPass = new RenderPass(scene, camera);
+composer.addPass(renderPass);
+
+const bloomPass = new UnrealBloomPass(
+  new THREE.Vector2(window.innerWidth, window.innerHeight),
+  0.42,   // strength
+  0.72,   // radius
+  0.86    // threshold
+);
+composer.addPass(bloomPass);
+
+/* Final grade: vignette + chromatic aberration + grain */
+const GradeShader = {
+  uniforms: {
+    tDiffuse: { value: null },
+    uTime: { value: 0 },
+    uVignette: { value: 1.0 },
+    uAberration: { value: 0.0016 },
+    uGrain: { value: 0.03 },
+    uResolution: { value: new THREE.Vector2(window.innerWidth, window.innerHeight) },
+    uFade: { value: 0.0 },
+  },
+
+  vertexShader: /* glsl */`
+    varying vec2 vUv;
+    void main() {
+      vUv = uv;
+      gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+    }
+  `,
+
+  fragmentShader: /* glsl */`
+    uniform sampler2D tDiffuse;
+    uniform float uTime;
+    uniform float uVignette;
+    uniform float uAberration;
+    uniform float uGrain;
+    uniform vec2 uResolution;
+    uniform float uFade;
+
+    varying vec2 vUv;
+
+    float rand(vec2 co) {
+      return fract(sin(dot(co.xy, vec2(12.9898, 78.233))) * 43758.5453);
+    }
+
+    void main() {
+      vec2 uv = vUv;
+      vec2 centred = uv - 0.5;
+
+      // Chromatic aberration (radial)
+      float dist = length(centred);
+      vec2 offset = centred * dist * uAberration;
+
+      vec4 cr = texture2D(tDiffuse, uv + offset);
+      vec4 cg = texture2D(tDiffuse, uv);
+      vec4 cb = texture2D(tDiffuse, uv - offset);
+
+      vec3 color = vec3(cr.r, cg.g, cb.b);
+
+      // Vignette
+      float vig = smoothstep(1.15, 0.28, dist * 1.45);
+      color *= mix(1.0, vig, uVignette);
+
+      // Subtle S-curve contrast
+      color = mix(color, color * color * (3.0 - 2.0 * color), 0.14);
+
+      // Grain
+      float n = rand(uv * uResolution + uTime * 60.0);
+      color += (n - 0.5) * uGrain;
+
+      // Global fade (for loader)
+      color *= (1.0 - uFade);
+
+      gl_FragColor = vec4(color, 1.0);
+    }
+  `,
+};
+
+const gradePass = new ShaderPass(GradeShader);
+composer.addPass(gradePass);
+
+const outputPass = new OutputPass();
+composer.addPass(outputPass);
+
+/* ═══════════════════════════════════════════════════════════════
+   15. CAMERA KEYFRAMES (scroll driven)
+   ═══════════════════════════════════════════════════════════════ */
+const CAM_KEYS = [
+  // Hero — wide 3/4 front
+  { p: 0.00, pos: [7.20, 2.70, 8.60], tgt: [0.15, 0.68, 0.00], fov: 40, roll: 0.0 },
+  // Design — side profile, low
+  { p: 0.13, pos: [2.20, 1.05, 9.40], tgt: [0.00, 0.66, 0.00], fov: 32, roll: 0.0 },
+  // Performance — low front 3/4
+  { p: 0.28, pos: [6.20, 1.05, 5.40], tgt: [0.90, 0.60, 0.00], fov: 34, roll: -0.01 },
+  // Aero — high rear 3/4
+  { p: 0.42, pos: [-6.60, 3.60, 5.20], tgt: [-0.60, 0.62, 0.00], fov: 36, roll: 0.008 },
+  // Technology — close cockpit
+  { p: 0.56, pos: [3.40, 1.55, 3.60], tgt: [0.35, 0.92, 0.00], fov: 30, roll: 0.0 },
+  // Configure — rear 3/4 hero
+  { p: 0.70, pos: [-6.20, 2.10, 6.60], tgt: [-0.35, 0.70, 0.00], fov: 38, roll: -0.006 },
+  // Specs — top 3/4
+  { p: 0.85, pos: [5.60, 5.20, 5.20], tgt: [0.00, 0.50, 0.00], fov: 36, roll: 0.0 },
+  // CTA — dramatic wide
+  { p: 1.00, pos: [8.20, 3.20, 9.60], tgt: [0.00, 0.62, 0.00], fov: 42, roll: 0.0 },
+];
+
+function sampleCameraKeys(p) {
+  p = Math.min(1, Math.max(0, p));
+
+  let i = 0;
+  while (i < CAM_KEYS.length - 2 && p > CAM_KEYS[i + 1].p) i++;
+
+  const a = CAM_KEYS[i];
+  const b = CAM_KEYS[i + 1];
+
+  const span = Math.max(0.0001, b.p - a.p);
+  let t = (p - a.p) / span;
+  t = Math.min(1, Math.max(0, t));
+
+  // Smoothstep for gentle easing between keys
+  const e = t * t * (3 - 2 * t);
+
+  return {
+    pos: [
+      a.pos[0] + (b.pos[0] - a.pos[0]) * e,
+      a.pos[1] + (b.pos[1] - a.pos[1]) * e,
+      a.pos[2] + (b.pos[2] - a.pos[2]) * e,
+    ],
+    tgt: [
+      a.tgt[0] + (b.tgt[0] - a.tgt[0]) * e,
+      a.tgt[1] + (b.tgt[1] - a.tgt[1]) * e,
+      a.tgt[2] + (b.tgt[2] - a.tgt[2]) * e,
+    ],
+    fov: a.fov + (b.fov - a.fov) * e,
+    roll: (a.roll || 0) + ((b.roll || 0) - (a.roll || 0)) * e,
+  };
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   16. SCROLL SYSTEM
+   ═══════════════════════════════════════════════════════════════ */
+function updateScroll() {
+  const doc = document.documentElement;
+  const max = doc.scrollHeight - window.innerHeight;
+  APP.target = max > 0 ? Math.min(1, Math.max(0, window.scrollY / max)) : 0;
+}
+
+window.addEventListener('scroll', updateScroll, { passive: true });
+window.addEventListener('resize', () => {
+  updateScroll();
+  onResize();
+}, { passive: true });
+
+/* ═══════════════════════════════════════════════════════════════
+   17. RESIZE
+   ═══════════════════════════════════════════════════════════════ */
+function onResize() {
+  const w = window.innerWidth;
+  const h = window.innerHeight;
+
+  camera.aspect = w / h;
+  camera.updateProjectionMatrix();
+
+  renderer.setSize(w, h);
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+
+  composer.setSize(w, h);
+  composer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+
+  bloomPass.setSize(w, h);
+
+  gradePass.uniforms.uResolution.value.set(w, h);
+
+  // Mobile adjustment
+  if (w < 720) {
+    bloomPass.strength = 0.34;
+    gradePass.uniforms.uAberration.value = 0.0011;
+  } else {
+    bloomPass.strength = 0.42;
+    gradePass.uniforms.uAberration.value = 0.0016;
+  }
+}
+
+window.addEventListener('resize', onResize);
+
+/* ═══════════════════════════════════════════════════════════════
+   18. REVEAL OBSERVER
+   ═══════════════════════════════════════════════════════════════ */
+function setupReveals() {
+  const items = document.querySelectorAll('.rv, .clip-rv');
+
+  if (!('IntersectionObserver' in window)) {
+    items.forEach((el) => el.classList.add('on'));
+    return;
+  }
+
+  const io = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('on');
+          io.unobserve(entry.target);
+        }
+      });
+    },
+    { threshold: 0.15, rootMargin: '0px 0px -60px 0px' }
+  );
+
+  items.forEach((el) => io.observe(el));
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   19. STAT COUNTERS
+   ═══════════════════════════════════════════════════════════════ */
+function setupCounters() {
+  const cells = document.querySelectorAll('.stat-cell');
+
+  const io = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        if (!entry.isIntersecting) return;
+        const cell = entry.target;
+        cell.classList.add('on');
+
+        const numEl = cell.querySelector('.stat-num');
+        if (!numEl || numEl.dataset.done) return;
+
+        numEl.dataset.done = '1';
+        const target = parseFloat(numEl.dataset.count);
+        const dec = parseInt(numEl.dataset.dec || '0', 10);
+        const duration = 1700;
+        const start = performance.now();
+
+        function frame(now) {
+          const t = Math.min(1, (now - start) / duration);
+          const e = 1 - Math.pow(1 - t, 3);
+          const v = target * e;
+
+          numEl.textContent = dec > 0
+            ? v.toFixed(dec)
+            : Math.round(v).toLocaleString('en-US');
+
+          if (t < 1) requestAnimationFrame(frame);
+          else {
+            numEl.textContent = dec > 0
+              ? target.toFixed(dec)
+              : target.toLocaleString('en-US');
+          }
+        }
+
+        requestAnimationFrame(frame);
+        io.unobserve(cell);
+      });
+    },
+    { threshold: 0.45 }
+  );
+
+  cells.forEach((c) => io.observe(c));
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   20. PAINT CONFIGURATOR
+   ═══════════════════════════════════════════════════════════════ */
+function setupConfigurator() {
+  const swatches = document.querySelectorAll('.swatch');
+  const nameEl = document.getElementById('configName');
+  const descEl = document.getElementById('configDesc');
+
+  const bodyMat = MAT.body;
+  const targetColor = new THREE.Color(PAINT_COLORS.body);
+  const startColor = new THREE.Color(PAINT_COLORS.body);
+
+  let currentTarget = new THREE.Color(PAINT_COLORS.body);
+  let currentFrom = new THREE.Color(PAINT_COLORS.body);
+  let lerpT = 1;
+
+  swatches.forEach((sw) => {
+    sw.addEventListener('click', () => {
+      swatches.forEach((s) => s.classList.remove('on'));
+      sw.classList.add('on');
+
+      const hex = sw.dataset.color;
+      currentFrom = bodyMat.color.clone();
+      currentTarget = new THREE.Color(hex);
+      lerpT = 0;
+
+      nameEl.textContent = sw.dataset.name;
+      descEl.textContent = sw.dataset.desc;
+
+      // Animate the roof glass tint slightly
+      MAT.glass.color.setHex(0x05060a);
+    });
+  });
+
+  APP.updatePaint = (dt) => {
+    if (lerpT < 1) {
+      lerpT = Math.min(1, lerpT + dt * 2.2);
+      const e = 1 - Math.pow(1 - lerpT, 3);
+      bodyMat.color.copy(currentFrom).lerp(currentTarget, e);
+
+      // Slight clearcoat variation for lighter paints
+      const lum = currentTarget.r * 0.3 + currentTarget.g * 0.6 + currentTarget.b * 0.1;
+      bodyMat.roughness = 0.24 - lum * 0.07;
+      bodyMat.envMapIntensity = 1.5 + lum * 0.5;
+    }
+  };
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   21. UI — HEADER, MENU, RAIL
+   ═══════════════════════════════════════════════════════════════ */
+function setupUI() {
+  /* Header solidify */
+  const hdr = document.getElementById('hdr');
+
+  /* Mobile menu */
+  const burger = document.getElementById('burger');
+  const menu = document.getElementById('mobileMenu');
+
+  burger.addEventListener('click', () => {
+    const on = menu.classList.toggle('on');
+    burger.classList.toggle('on', on);
+    document.body.style.overflow = on ? 'hidden' : '';
+  });
+
+  menu.querySelectorAll('a').forEach((a) => {
+    a.addEventListener('click', () => {
+      menu.classList.remove('on');
+      burger.classList.remove('on');
+      document.body.style.overflow = '';
+    });
+  });
+
+  /* Section rail */
+  const railItems = document.querySelectorAll('.rail-item');
+  const sections = [
+    document.getElementById('s0'),
+    document.getElementById('s1'),
+    document.getElementById('s2'),
+    document.getElementById('s3'),
+    document.getElementById('s4'),
+    document.getElementById('s5'),
+    document.getElementById('s6'),
+    document.getElementById('s7'),
+  ];
+
+  railItems.forEach((item) => {
+    item.addEventListener('click', () => {
+      const idx = parseInt(item.dataset.target, 10);
+      const sec = sections[idx];
+      if (sec) {
+        window.scrollTo({
+          top: sec.offsetTop,
+          behavior: 'smooth',
+        });
+      }
+    });
+  });
+
+  /* Smooth anchor links */
+  document.querySelectorAll('a[href^="#"]').forEach((link) => {
+    link.addEventListener('click', (e) => {
+      const href = link.getAttribute('href');
+      if (!href || href === '#') return;
+
+      const tgt = document.querySelector(href);
+      if (!tgt) return;
+
+      e.preventDefault();
+      window.scrollTo({ top: tgt.offsetTop, behavior: 'smooth' });
+    });
+  });
+
+  /* Progress bar + header + rail */
+  const progFill = document.getElementById('progFill');
+
+  APP.updateUI = () => {
+    const p = APP.smooth;
+
+    progFill.style.height = (p * 100).toFixed(2) + '%';
+
+    hdr.classList.toggle('solid', window.scrollY > 30);
+
+    // Active rail item
+    const idx = Math.min(railItems.length - 1, Math.round(p * (railItems.length - 1)));
+    railItems.forEach((it, i) => it.classList.toggle('on', i === idx));
+  };
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   22. MOUSE PARALLAX
+   ═══════════════════════════════════════════════════════════════ */
+function setupMouse() {
+  window.addEventListener('mousemove', (e) => {
+    APP.mouseX = (e.clientX / window.innerWidth) * 2 - 1;
+    APP.mouseY = (e.clientY / window.innerHeight) * 2 - 1;
+  }, { passive: true });
+
+  window.addEventListener('touchmove', (e) => {
+    if (!e.touches.length) return;
+    APP.mouseX = (e.touches[0].clientX / window.innerWidth) * 2 - 1;
+    APP.mouseY = (e.touches[0].clientY / window.innerHeight) * 2 - 1;
+  }, { passive: true });
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   23. ANIMATION LOOP
+   ═══════════════════════════════════════════════════════════════ */
+const tmpPos = new THREE.Vector3();
+const tmpTgt = new THREE.Vector3();
+const smoothPos = new THREE.Vector3(7.2, 2.7, 8.6);
+const smoothTgt = new THREE.Vector3(0, 0.68, 0);
+let smoothFov = 40;
+let smoothRoll = 0;
+
+let lastTime = performance.now();
+
+function animate() {
+  requestAnimationFrame(animate);
+
+  const now = performance.now();
+  let dt = (now - lastTime) / 1000;
+  lastTime = now;
+  dt = Math.min(dt, 0.05);
+
+  if (!APP.ready) {
+    composer.render();
+    return;
+  }
+
+  APP.time += dt;
+
+  /* ── Smooth scroll value (critically damped) ── */
+  const prevSmooth = APP.smooth;
+  APP.smooth += (APP.target - APP.smooth) * Math.min(1, dt * 6.5);
+  APP.velocity = (APP.smooth - prevSmooth) / Math.max(dt, 0.0001);
+
+  /* ── Smooth mouse ── */
+  APP.smoothMouseX += (APP.mouseX - APP.smoothMouseX) * Math.min(1, dt * 3.2);
+  APP.smoothMouseY += (APP.mouseY - APP.smoothMouseY) * Math.min(1, dt * 3.2);
+
+  /* ── Camera ── */
+  const k = sampleCameraKeys(APP.smooth);
+
+  tmpPos.set(k.pos[0], k.pos[1], k.pos[2]);
+  tmpTgt.set(k.tgt[0], k.tgt[1], k.tgt[2]);
+
+  // Parallax offset
+  const parX = APP.smoothMouseX * 0.42;
+  const parY = -APP.smoothMouseY * 0.26;
+
+  tmpPos.x += parX;
+  tmpPos.y += parY;
+
+  const camLerp = Math.min(1, dt * 3.6);
+  smoothPos.lerp(tmpPos, camLerp);
+  smoothTgt.lerp(tmpTgt, camLerp);
+
+  smoothFov += (k.fov - smoothFov) * Math.min(1, dt * 3.0);
+  smoothRoll += (k.roll - smoothRoll) * Math.min(1, dt * 3.0);
+
+  camera.position.copy(smoothPos);
+  camera.lookAt(smoothTgt);
+
+  if (Math.abs(smoothRoll) > 0.0001) {
+    camera.rotateZ(smoothRoll);
+  }
+
+  if (Math.abs(camera.fov - smoothFov) > 0.01) {
+    camera.fov = smoothFov;
+    camera.updateProjectionMatrix();
+  }
+
+  /* ── Car idle motion ── */
+  const idle = APP.time;
+
+  // Gentle yaw sway
+  car.rotation.y = -0.12 + Math.sin(idle * 0.32) * 0.022;
+
+  // Suspension breathing
+  const breathe = Math.sin(idle * 1.05) * 0.006 + Math.sin(idle * 0.43) * 0.004;
+  car.position.y = breathe;
+
+  // Subtle pitch under "acceleration"
+  car.rotation.z = Math.sin(idle * 0.61) * 0.0035;
+
+  /* ── Wheel spin ── */
+  const perfBoost = smoothstep(0.20, 0.34, APP.smooth) * (1 - smoothstep(0.44, 0.58, APP.smooth));
+  const targetSpeed = 0.6 + perfBoost * 13.0;
+
+  APP.wheelSpeed += (targetSpeed - APP.wheelSpeed) * Math.min(1, dt * 1.4);
+  APP.wheelSpin += APP.wheelSpeed * dt;
+
+  for (const w of wheelGroups) {
+    w.wheel.rotation.z = -APP.wheelSpin;
+
+    // Front steering
+    if (w.steer) {
+      const steer = Math.sin(idle * 0.55) * 0.045 * (1 - perfBoost * 0.6);
+      w.pivot.rotation.y = steer;
+    }
+
+    // Suspension compression
+    const comp = Math.sin(idle * 2.1 + (w.front ? 0 : 1.2)) * 0.006;
+    w.pivot.position.y = w.baseY + comp;
+  }
+
+  /* ── Particles ── */
+  const pArr = particles.geometry.attributes.position.array;
+  const speeds = particles.userData.speeds;
+
+  for (let i = 0; i < speeds.length; i++) {
+    const iy = i * 3 + 1;
+    pArr[iy] += speeds[i] * dt;
+
+    if (pArr[iy] > 9.5) {
+      pArr[iy] = -0.5;
+    }
+  }
+  particles.geometry.attributes.position.needsUpdate = true;
+  particles.rotation.y += dt * 0.012;
+
+  /* ── Headlight / taillight pulse ── */
+  const pulse = 0.85 + Math.sin(idle * 2.4) * 0.15;
+  MAT.emissiveBlue.emissiveIntensity = 4.5 * pulse;
+  MAT.emissiveRed.emissiveIntensity = 3.6 * (0.9 + Math.sin(idle * 1.8) * 0.1);
+
+  /* ── Bloom response to scroll ── */
+  bloomPass.strength = 0.36 + perfBoost * 0.24 + Math.abs(APP.velocity) * 0.55;
+
+  /* ── Paint transition ── */
+  if (APP.updatePaint) APP.updatePaint(dt);
+
+  /* ── UI ── */
+  if (APP.updateUI) APP.updateUI();
+
+  /* ── Grade ── */
+  gradePass.uniforms.uTime.value = APP.time;
+
+  /* ── Render ── */
+  composer.render();
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   24. BOOT SEQUENCE
+   ═══════════════════════════════════════════════════════════════ */
+const STATUS_MESSAGES = [
+  'Initialising render engine',
+  'Generating studio environment',
+  'Building body panels',
+  'Fitting M double-spoke wheels',
+  'Calibrating materials',
+  'Compiling shaders',
+  'Ready',
+];
+
+function boot() {
+  const loader = document.getElementById('loader');
+  const pctEl = document.getElementById('loadPct');
+  const progEl = document.getElementById('loadProg');
+  const statusEl = document.getElementById('loadStatus');
+
+  let progress = 0;
+  let statusIdx = 0;
+
+  const CIRC = 283;
+
+  function setProgress(v) {
+    progress = Math.min(100, v);
+    pctEl.textContent = Math.round(progress);
+    progEl.style.strokeDashoffset = CIRC - (CIRC * progress) / 100;
+  }
+
+  function tick() {
+    const step = progress < 70
+      ? Math.random() * 7 + 2.5
+      : Math.random() * 3 + 0.8;
+
+    setProgress(progress + step);
+
+    const newIdx = Math.min(
+      STATUS_MESSAGES.length - 1,
+      Math.floor((progress / 100) * STATUS_MESSAGES.length)
+    );
+
+    if (newIdx !== statusIdx) {
+      statusIdx = newIdx;
+      statusEl.textContent = STATUS_MESSAGES[statusIdx];
+    }
+
+    if (progress < 100) {
+      setTimeout(tick, 130 + Math.random() * 180);
+    } else {
+      statusEl.textContent = STATUS_MESSAGES[STATUS_MESSAGES.length - 1];
+      finish();
+    }
+  }
+
+  function finish() {
+    setTimeout(() => {
+      loader.classList.add('done');
+      document.body.classList.remove('loading');
+
+      APP.ready = true;
+
+      // Trigger hero animation
+      setTimeout(() => {
+        document.getElementById('heroTitle').classList.add('ready');
+      }, 120);
+
+      // Reveal everything already in view
+      setTimeout(() => {
+        document.querySelectorAll('.rv, .clip-rv').forEach((el) => {
+          const r = el.getBoundingClientRect();
+          if (r.top < window.innerHeight * 0.92) {
+            el.classList.add('on');
+          }
+        });
+      }, 260);
+
+      // Fade in grade
+      let fade = 1.0;
+      const fadeInt = setInterval(() => {
+        fade -= 0.06;
+        if (fade <= 0) {
+          fade = 0;
+          clearInterval(fadeInt);
+        }
+        gradePass.uniforms.uFade.value = fade;
+      }, 16);
+
+      updateScroll();
+    }, 480);
+  }
+
+  setTimeout(tick, 420);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   25. INIT
+   ═══════════════════════════════════════════════════════════════ */
+function init() {
+  APP.reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  setupReveals();
+  setupCounters();
+  setupConfigurator();
+  setupUI();
+  setupMouse();
+
+  onResize();
+  updateScroll();
+
+  // Warm up render
+  camera.position.set(7.2, 2.7, 8.6);
+  camera.lookAt(0, 0.68, 0);
+  composer.render();
+
+  boot();
+  animate();
+}
+
+init();
+
+/* ═══════════════════════════════════════════════════════════════
+   26. CONSOLE SIGNATURE
+   ═══════════════════════════════════════════════════════════════ */
+(function signature() {
+  const s1 = 'background:#1c69d4;color:#fff;padding:5px 12px;font-weight:700;font-family:monospace;border-radius:2px 0 0 2px;';
+  const s2 = 'background:#e4002b;color:#fff;padding:5px 12px;font-weight:700;font-family:monospace;border-radius:0 2px 2px 0;';
+  try {
+    console.log('%cBMW M4%c Interactive 3D Showcase', s1, s2);
+    console.log('%cProcedural WebGL · Three.js r160 · No external models',
+      'color:#7c7c8a;font-family:monospace;font-size:11px;');
+  } catch (e) { /* noop */ }
+})();
+  </script>
+
+</body>
+
+</html>
