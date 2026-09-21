@@ -1,0 +1,15 @@
+{
+  "name": "pulseflow-landing",
+  "version": "1.0.0",
+  "private": true,
+  "description": "High-conversion landing page for PulseFlow automated API workflow platform.",
+  "scripts": {
+    "start": "serve -s . -l 3000",
+    "preview": "serve -s . -l 3000",
+    "dev": "echo \"No dev script configured\""
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "serve": "^14.2.3"
+  }
+}
